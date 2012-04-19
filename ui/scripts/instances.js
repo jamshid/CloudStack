@@ -496,13 +496,17 @@
                 }
 
                 var displayname = args.data.displayname;
-                if(displayname != null && displayname.length > 0)
+                if(displayname != null && displayname.length > 0) {
                   array1.push("&displayname="+todb(displayname));
+									array1.push("&name="+todb(displayname));
+								}
 
                 var group = args.data.groupname;
                 if (group != null && group.length > 0)
                   array1.push("&group="+todb(group));
 
+								//array1.push("&startVm=false");	//for testing only, comment it out before checking in
+									
                 $.ajax({
                   url: createURL("deployVirtualMachine"+array1.join("")),
                   dataType: "json",
@@ -513,8 +517,8 @@
                        {jobId: jid,
                         getUpdatedItem: function(json) {
                           var item = json.queryasyncjobresultresponse.jobresult.virtualmachine;
-                          if (item.passwordenabled == true)
-                            alert("Password of new VM " + getVmName(item.name, item.displayname) + " is  " + item.password);
+                          if (item.password != null)
+                            alert("Password of new VM " + item.displayname + " is  " + item.password);
                           return item;
                         },
                         getActionFilter: function() {
@@ -575,7 +579,13 @@
             },
             notification: function(args) {
               return 'label.action.start.instance';
-            }
+            },
+						complete: function(args) {						  
+							if(args.password != null) {
+								alert('Password of the VM is ' + args.password);
+							}
+							return 'label.action.start.instance';
+						}			
           },
           notification: {
             poll: pollAsyncJobResult
@@ -854,7 +864,13 @@
               },
               notification: function(args) {
                 return 'label.action.start.instance';
-              }
+              },							
+							complete: function(args) {						  
+								if(args.password != null) {
+									alert('Password of the VM is ' + args.password);
+								}
+								return 'label.action.start.instance';
+							}			
             },
             notification: {
               poll: pollAsyncJobResult
@@ -1034,13 +1050,12 @@
           attachISO: {
             label: 'label.action.attach.iso',
             createForm: {
-              title: 'label.action.attach.iso',
-              desc: 'label.action.attach.iso',
+              title: 'label.action.attach.iso',             
               fields: {
                 iso: {
                   label: 'ISO',
                   select: function(args) {
-									  var items = [];//???
+									  var items = [];
 										var map = {};
                     $.ajax({
                       url: createURL("listIsos&isReady=true&isofilter=featured"),
@@ -1110,12 +1125,9 @@
                 }
               });
             },
-            messages: {
-              confirm: function(args) {
-                return 'Are you sure you want to attach ISO to instance ' + args.name + '?';
-              },
+            messages: {             
               notification: function(args) {
-                return 'label.attach.iso';
+                return 'label.action.attach.iso';
               }
             },
             notification: {
@@ -1542,14 +1554,12 @@
 
             fields: [
               {                       
-                id: { label: 'label.id', isEditable: false },
+                
                 displayname: { label: 'label.display.name', isEditable: true },		
                 instancename: { label: 'label.internal.name' },								
-                state: { label: 'label.state', isEditable: false },
-                publicip: { label: 'label.public.ip', isEditable: false },
-                zonename: { label: 'label.zone.name', isEditable: false },
-                hypervisor: { label: 'label.hypervisor', isEditable: false },
-                templatename: { label: 'label.template', isEditable: false },
+                state: { label: 'label.state' },                       
+                hypervisor: { label: 'label.hypervisor' },
+                templatename: { label: 'label.template' },
                 guestosid: {
                   label: 'label.os.type',
                   isEditable: true,
@@ -1568,23 +1578,30 @@
                       }
                     });
                   }
-                },
-
-                serviceofferingname: { label: 'label.compute.offering', isEditable: false },
-                group: { label: 'label.group', isEditable: true },
-                hostname: { label: 'label.host', isEditable: false},
-                haenable: { label: 'label.ha.enabled', isEditable: false, converter:cloudStack.converters.toBooleanText },
-                isoid: {
+                },              
+                                
+                /*
+								isoid: {
                   label: 'label.attached.iso',
                   isEditable: false,
                   converter: function(isoid) {
                     return cloudStack.converters.toBooleanText(isoid != null);
                   }
                 },
-                domain: { label: 'label.domain', isEditable: false },
-                account: { label: 'label.account', isEditable: false },
-                created: { label: 'label.created', isEditable: false, converter: cloudStack.converters.toLocalDate },
-								name: { label: 'label.name', isEditable: false }
+								*/
+								isoname: { label: 'label.attached.iso' },
+								
+								serviceofferingname: { label: 'label.compute.offering' },
+								haenable: { label: 'label.ha.enabled', converter:cloudStack.converters.toBooleanText },
+								group: { label: 'label.group', isEditable: true },
+								zonename: { label: 'label.zone.name', isEditable: false },
+								hostname: { label: 'label.host' },                
+								publicip: { label: 'label.public.ip' },  
+                domain: { label: 'label.domain' },
+                account: { label: 'label.account' },
+                created: { label: 'label.created', converter: cloudStack.converters.toLocalDate },
+								name: { label: 'label.name' },
+								id: { label: 'label.id' }
               }
             ],
 
@@ -1681,8 +1698,8 @@
                 data: {
                   totalCPU: jsonObj.cpunumber + " x " + cloudStack.converters.convertHz(jsonObj.cpuspeed),
                   cpuused: jsonObj.cpuused,
-                  networkkbsread: (jsonObj.networkkbsread == null || jsonObj.networkkbsread == 0)? "N/A": cloudStack.converters.convertBytes(jsonObj.networkkbsread * 1024),
-                  networkkbswrite: (jsonObj.networkkbswrite == null || jsonObj.networkkbswrite == 0)? "N/A": cloudStack.converters.convertBytes(jsonObj.networkkbswrite * 1024)
+                  networkkbsread: (jsonObj.networkkbsread == null)? "N/A": cloudStack.converters.convertBytes(jsonObj.networkkbsread * 1024),
+                  networkkbswrite: (jsonObj.networkkbswrite == null)? "N/A": cloudStack.converters.convertBytes(jsonObj.networkkbswrite * 1024)
                 }
               });
             }

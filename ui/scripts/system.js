@@ -5396,7 +5396,17 @@
             name: { label: 'label.name' },
             zonename: { label: 'label.zone' },
             podname: { label: 'label.pod' },
-            clustername: { label: 'label.cluster' }
+            clustername: { label: 'label.cluster' },					
+						state: {
+							label: 'label.state',							
+							indicator: {
+								'Up': 'on',
+								'Down': 'off',
+								'Disconnected': 'off',
+								'Alert': 'off',
+								'Error': 'off'
+							}
+						}						
           },
 
           dataProvider: function(args) {
@@ -6036,8 +6046,8 @@
 											    memorytotal: (jsonObj.memorytotal == null || jsonObj.memorytotal == 0)? "N/A": cloudStack.converters.convertBytes(jsonObj.memorytotal),
 											    memoryallocated: (jsonObj.memoryallocated == null || jsonObj.memoryallocated == 0)? "N/A": cloudStack.converters.convertBytes(jsonObj.memoryallocated ),
 											    memoryused: (jsonObj.memoryused == null || jsonObj.memoryused == 0)? "N/A": cloudStack.converters.convertBytes(jsonObj.memoryused),												
-											    networkkbsread: (jsonObj.networkkbsread == null || jsonObj.networkkbsread == 0)? "N/A": cloudStack.converters.convertBytes(jsonObj.networkkbsread * 1024),
-											    networkkbswrite: (jsonObj.networkkbswrite == null || jsonObj.networkkbswrite == 0)? "N/A": cloudStack.converters.convertBytes(jsonObj.networkkbswrite * 1024)
+											    networkkbsread: (jsonObj.networkkbsread == null)? "N/A": cloudStack.converters.convertBytes(jsonObj.networkkbsread * 1024),
+											    networkkbswrite: (jsonObj.networkkbswrite == null)? "N/A": cloudStack.converters.convertBytes(jsonObj.networkkbswrite * 1024)
 												}
 											});		
 										}
