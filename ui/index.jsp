@@ -2256,6 +2256,7 @@ dictionary = {
 'label.assign': '<fmt:message key="label.assign" />',
 'label.associated.network.id': '<fmt:message key="label.associated.network.id" />',
 'label.attached.iso': '<fmt:message key="label.attached.iso" />',
+'label.attach.iso': '<fmt:message key="label.attach.iso" />',
 'label.availability.zone': '<fmt:message key="label.availability.zone" />',
 'label.availability': '<fmt:message key="label.availability" />',
 'label.available.public.ips': '<fmt:message key="label.available.public.ips" />',
