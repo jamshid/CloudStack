@@ -625,7 +625,7 @@ public class ResourceManagerImpl implements ResourceManager, ResourceService, Ma
             if (pod == null) {
             	throw new InvalidParameterValueException("Can't find pod by id " + podId);
             }
-        	ClusterVO cluster = new ClusterVO(dcId, podId, clusterName);
+       	    ClusterVO cluster = new ClusterVO(dcId, podId, clusterName);
             cluster.setHypervisorType(hypervisorType);
             try {
                 cluster = _clusterDao.persist(cluster);

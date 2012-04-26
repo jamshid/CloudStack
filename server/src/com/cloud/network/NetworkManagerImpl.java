@@ -1946,7 +1946,8 @@ public class NetworkManagerImpl implements NetworkManager, NetworkService, Manag
     }
 
     @Override
-    public void release(VirtualMachineProfile<? extends VMInstanceVO> vmProfile, boolean forced) {
+    public void release(VirtualMachineProfile<? extends VMInstanceVO> vmProfile, boolean forced) throws
+    		ConcurrentOperationException, ResourceUnavailableException {
         List<NicVO> nics = _nicDao.listByVmId(vmProfile.getId());
         for (NicVO nic : nics) {
             NetworkVO network = _networksDao.findById(nic.getNetworkId());
@@ -1966,6 +1967,16 @@ public class NetworkManagerImpl implements NetworkManager, NetworkService, Manag
                             _nicDao.update(nic.getId(), nic);
                         }
                     }
+                    // Perform release on network elements
+                    for (NetworkElement element : _networkElements) {
+                        if (s_logger.isDebugEnabled()) {
+                            s_logger.debug("Asking " + element.getName() + " to release " + nic);
+                        }
+                        //NOTE: Context appear to never be used in release method 
+                        //implementations. Consider removing it from interface Element
+                        element.release(network, profile, vmProfile, null);
+                    }
+                                        
                 } else {
                     nic.setState(Nic.State.Allocated);
                     updateNic(nic, network.getId(), -1);
@@ -2214,6 +2225,13 @@ public class NetworkManagerImpl implements NetworkManager, NetworkService, Manag
         	InvalidParameterValueException ex = new InvalidParameterValueException("Unable to find network offering by specified id");
         	if (ntwkOff != null) {
         		ex.addProxyObject(ntwkOff, networkOfferingId, "networkOfferingId");        		
+        		// Get the VO object's table name.
+                String tablename = AnnotationHelper.getTableName(ntwkOff);
+                if (tablename != null) {
+                	ex.addProxyObject(tablename, networkOfferingId, "networkOfferingId");
+                } else {
+                	s_logger.info("\nCould not retrieve table name (annotation) from " + tablename + " VO proxy object\n");
+                }
                 throw ex;
         	}
         	throw ex;
@@ -2387,6 +2405,12 @@ public class NetworkManagerImpl implements NetworkManager, NetworkService, Manag
         if (createVlan && !ntwkOff.getSpecifyIpRanges()) {
         	InvalidParameterValueException ex = new InvalidParameterValueException("Network offering with specified id doesn't support adding multiple ip ranges");
         	ex.addProxyObject(ntwkOff, ntwkOff.getId(), "networkOfferingId");
+            String tablename = AnnotationHelper.getTableName(ntwkOff);
+            if (tablename != null) {
+            	ex.addProxyObject(tablename, ntwkOff.getId(), "networkOfferingId");
+            } else {
+            	s_logger.info("\nCould not retrieve table name (annotation) from " + tablename + " VO proxy object\n");
+            }
             throw ex;   
         }
 
@@ -3660,21 +3684,25 @@ public class NetworkManagerImpl implements NetworkManager, NetworkService, Manag
 
     @Override
     @DB
-    public boolean associateIpAddressListToAccount(long userId, long accountId, long zoneId, Long vlanId, Network network) throws InsufficientCapacityException, ConcurrentOperationException,
+    public boolean associateIpAddressListToAccount(long userId, long accountId, long zoneId, Long vlanId, Network guestNetwork)
+            throws InsufficientCapacityException, ConcurrentOperationException,
             ResourceUnavailableException, ResourceAllocationException {
         Account owner = _accountMgr.getActiveAccountById(accountId);
         boolean createNetwork = false;
+        
+        if (guestNetwork != null && guestNetwork.getTrafficType() != TrafficType.Guest) {
+            throw new InvalidParameterValueException("Network " + guestNetwork + " is not of a type " + TrafficType.Guest);
+        }
 
         Transaction txn = Transaction.currentTxn();
-
         txn.start();
 
-        if (network == null) {
+        if (guestNetwork == null) {
             List<? extends Network> networks = getIsolatedNetworksWithSourceNATOwnedByAccountInZone(zoneId, owner);
             if (networks.size() == 0) {
                 createNetwork = true;
             } else if (networks.size() == 1)  {
-                network = networks.get(0);
+                guestNetwork = networks.get(0);
             }else{
                 throw new InvalidParameterValueException("Error, more than 1 Guest Isolated Networks with SourceNAT service enabled found for this account, cannot assosiate the IP range, please provide the network ID");
             }
@@ -3690,9 +3718,9 @@ public class NetworkManagerImpl implements NetworkManager, NetworkService, Manag
             
             if (requiredOfferings.get(0).getState() == NetworkOffering.State.Enabled) {
                 s_logger.debug("Creating network for account " + owner + " from the network offering id=" + requiredOfferings.get(0).getId() + " as a part of createVlanIpRange process");
-                network = createGuestNetwork(requiredOfferings.get(0).getId(), owner.getAccountName() + "-network", owner.getAccountName() + "-network", null, null, null, null, owner, false, null, physicalNetwork, zoneId,
+                guestNetwork = createGuestNetwork(requiredOfferings.get(0).getId(), owner.getAccountName() + "-network", owner.getAccountName() + "-network", null, null, null, null, owner, false, null, physicalNetwork, zoneId,
                         ACLType.Account, null);
-                if (network == null) {
+                if (guestNetwork == null) {
                     s_logger.warn("Failed to create default Virtual network for the account " + accountId + "in zone " + zoneId);
                     throw new CloudRuntimeException("Failed to create a Guest Isolated Networks with SourceNAT service enabled as a part of createVlanIpRange, for the account " + accountId + "in zone " + zoneId);
                 }
@@ -3703,7 +3731,7 @@ public class NetworkManagerImpl implements NetworkManager, NetworkService, Manag
 
         // Check if there is a source nat ip address for this account; if not - we have to allocate one
         boolean allocateSourceNat = false;
-        List<IPAddressVO> sourceNat = _ipAddressDao.listByAssociatedNetwork(network.getId(), true);
+        List<IPAddressVO> sourceNat = _ipAddressDao.listByAssociatedNetwork(guestNetwork.getId(), true);
         if (sourceNat.isEmpty()) {
             allocateSourceNat = true;
         }
@@ -3719,7 +3747,7 @@ public class NetworkManagerImpl implements NetworkManager, NetworkService, Manag
                 } else {
                     addr.setSourceNat(false);
                 }
-                addr.setAssociatedWithNetworkId(network.getId());
+                addr.setAssociatedWithNetworkId(guestNetwork.getId());
                 addr.setAllocatedTime(new Date());
                 addr.setAllocatedInDomainId(owner.getDomainId());
                 addr.setAllocatedToAccountId(owner.getId());
@@ -3926,6 +3954,17 @@ public class NetworkManagerImpl implements NetworkManager, NetworkService, Manag
         return accountNetworks;
     }
 
+    @Override
+    public List<NetworkVO> listAllNetworksInAllZonesByType(Network.GuestType type) {
+    	List<NetworkVO> networks = new ArrayList<NetworkVO>();
+    	for (NetworkVO network: _networksDao.listAll()) {
+    		if (!isNetworkSystem(network)) {
+    			networks.add(network);
+    		}
+    	}
+    	return networks;
+    }
+        
     @DB
     @Override
     public IPAddressVO markIpAsUnavailable(long addrId) {
@@ -4788,13 +4827,22 @@ public class NetworkManagerImpl implements NetworkManager, NetworkService, Manag
             Integer newStartVnet = 0;
             Integer newEndVnet = 0;
             String[] newVnetRange = newVnetRangeString.split("-");
-
+            int maxVnet = 4096;
+            // for GRE phynets allow up to 32bits
+            // TODO: Not happy about this test.  
+            // What about guru-like objects for physical networs?
+            s_logger.debug("ISOLATION METHODS:" + network.getIsolationMethods());
+            // Java does not have unsigned types...
+            if (network.getIsolationMethods().contains("GRE")) { 
+            	maxVnet = (int)(Math.pow(2, 32)-1);
+            }
+            String rangeMessage = " between 0 and " + maxVnet; 
             if (newVnetRange.length < 2) {
-                throw new InvalidParameterValueException("Please provide valid vnet range between 0-4096");
+                throw new InvalidParameterValueException("Please provide valid vnet range" + rangeMessage);
             }
 
             if (newVnetRange[0] == null || newVnetRange[1] == null) {
-                throw new InvalidParameterValueException("Please provide valid vnet range between 0-4096");
+                throw new InvalidParameterValueException("Please provide valid vnet range" + rangeMessage);
             }
 
             try {
@@ -4802,17 +4850,16 @@ public class NetworkManagerImpl implements NetworkManager, NetworkService, Manag
                 newEndVnet = Integer.parseInt(newVnetRange[1]);
             } catch (NumberFormatException e) {
                 s_logger.warn("Unable to parse vnet range:", e);
-                throw new InvalidParameterValueException("Please provide valid vnet range between 0-4096");
+                throw new InvalidParameterValueException("Please provide valid vnet range" + rangeMessage);
             }
-
-            if (newStartVnet < 0 || newEndVnet > 4096) {
-                throw new InvalidParameterValueException("Vnet range has to be between 0-4096");
+            if (newStartVnet < 0 || newEndVnet > maxVnet) {
+                throw new InvalidParameterValueException("Vnet range has to be" + rangeMessage);
             }
 
             if (newStartVnet > newEndVnet) {
-                throw new InvalidParameterValueException("Vnet range has to be between 0-4096 and start range should be lesser than or equal to stop range");
+                throw new InvalidParameterValueException("Vnet range has to be" + rangeMessage + " and start range should be lesser than or equal to stop range");
             }
-
+            
             if (physicalNetworkHasAllocatedVnets(network.getDataCenterId(), network.getId())) {
                 String[] existingRange = network.getVnet().split("-");
                 int existingStartVnet = Integer.parseInt(existingRange[0]);

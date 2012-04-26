@@ -94,6 +94,7 @@ import com.cloud.utils.PropertiesUtil;
 import com.cloud.utils.component.ComponentLocator;
 import com.cloud.utils.crypt.DBEncryptionUtil;
 import com.cloud.utils.db.DB;
+import com.cloud.utils.db.SearchCriteria;
 import com.cloud.utils.db.Transaction;
 import com.cloud.utils.exception.CloudRuntimeException;
 import com.cloud.utils.net.NetUtils;
@@ -906,18 +907,18 @@ public class ConfigurationServerImpl implements ConfigurationServer {
         txn.start();
 
         // Offering #1
-        NetworkOfferingVO deafultSharedSGNetworkOffering = new NetworkOfferingVO(
+        NetworkOfferingVO defaultSharedSGNetworkOffering = new NetworkOfferingVO(
                 NetworkOffering.DefaultSharedNetworkOfferingWithSGService,
                 "Offering for Shared Security group enabled networks",
                 TrafficType.Guest,
                 false, true, null, null, true, Availability.Optional,
                 null, Network.GuestType.Shared, true, true);
 
-        deafultSharedSGNetworkOffering.setState(NetworkOffering.State.Enabled);
-        deafultSharedSGNetworkOffering = _networkOfferingDao.persistDefaultNetworkOffering(deafultSharedSGNetworkOffering);
-
+        defaultSharedSGNetworkOffering.setState(NetworkOffering.State.Enabled);
+        defaultSharedSGNetworkOffering = _networkOfferingDao.persistDefaultNetworkOffering(defaultSharedSGNetworkOffering);
+        
         for (Service service : defaultSharedSGNetworkOfferingProviders.keySet()) {
-            NetworkOfferingServiceMapVO offService = new NetworkOfferingServiceMapVO(deafultSharedSGNetworkOffering.getId(), service, defaultSharedSGNetworkOfferingProviders.get(service));
+            NetworkOfferingServiceMapVO offService = new NetworkOfferingServiceMapVO(defaultSharedSGNetworkOffering.getId(), service, defaultSharedSGNetworkOfferingProviders.get(service));
             _ntwkOfferingServiceMapDao.persist(offService);
             s_logger.trace("Added service for the network offering: " + offService);
         }
@@ -989,7 +990,7 @@ public class ConfigurationServerImpl implements ConfigurationServer {
             _ntwkOfferingServiceMapDao.persist(offService);
             s_logger.trace("Added service for the network offering: " + offService);
         }
-
+        
         txn.commit();
     }
 

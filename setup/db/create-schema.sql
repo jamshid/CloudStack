@@ -114,7 +114,8 @@ DROP TABLE IF EXISTS `cloud`.`op_nwgrp_work`;
 DROP TABLE IF EXISTS `cloud`.`op_vm_ruleset_log`;
 DROP TABLE IF EXISTS `cloud`.`ovs_host_vlan_alloc`;
 DROP TABLE IF EXISTS `cloud`.`ovs_tunnel`;
-DROP TABLE IF EXISTS `cloud`.`ovs_tunnel_account`;
+DROP TABLE IF EXISTS `cloud`.`ovs_tunnel_network`;
+DROP TABLE IF EXISTS `cloud`.`ovs_tunnel_interface`;
 DROP TABLE IF EXISTS `cloud`.`ovs_tunnel_alloc`;
 DROP TABLE IF EXISTS `cloud`.`ovs_vlan_mapping_dirty`;
 DROP TABLE IF EXISTS `cloud`.`ovs_vm_flow_log`;
@@ -1570,9 +1571,11 @@ INSERT IGNORE INTO `cloud`.`hypervisor_capabilities`(hypervisor_type, hypervisor
 INSERT IGNORE INTO `cloud`.`hypervisor_capabilities`(hypervisor_type, hypervisor_version, max_guests_limit, security_group_enabled) VALUES ('XenServer', '5.6 FP1', 50, 1);
 INSERT IGNORE INTO `cloud`.`hypervisor_capabilities`(hypervisor_type, hypervisor_version, max_guests_limit, security_group_enabled) VALUES ('XenServer', '5.6 SP2', 50, 1);
 INSERT IGNORE INTO `cloud`.`hypervisor_capabilities`(hypervisor_type, hypervisor_version, max_guests_limit, security_group_enabled) VALUES ('XenServer', '6.0', 50, 1);
+INSERT IGNORE INTO `cloud`.`hypervisor_capabilities`(hypervisor_type, hypervisor_version, max_guests_limit, security_group_enabled) VALUES ('XenServer', '6.0.2', 50, 1);
 INSERT IGNORE INTO `cloud`.`hypervisor_capabilities`(hypervisor_type, hypervisor_version, max_guests_limit, security_group_enabled) VALUES ('VMware', 'default', 128, 0);
 INSERT IGNORE INTO `cloud`.`hypervisor_capabilities`(hypervisor_type, hypervisor_version, max_guests_limit, security_group_enabled) VALUES ('VMware', '4.0', 128, 0);
 INSERT IGNORE INTO `cloud`.`hypervisor_capabilities`(hypervisor_type, hypervisor_version, max_guests_limit, security_group_enabled) VALUES ('VMware', '4.1', 128, 0);
+INSERT IGNORE INTO `cloud`.`hypervisor_capabilities`(hypervisor_type, hypervisor_version, max_guests_limit, security_group_enabled) VALUES ('VMware', '5.0', 128, 0);
 INSERT IGNORE INTO `cloud`.`hypervisor_capabilities`(hypervisor_type, hypervisor_version, max_guests_limit, security_group_enabled) VALUES ('KVM', 'default', 50, 1);
 INSERT IGNORE INTO `cloud`.`hypervisor_capabilities`(hypervisor_type, hypervisor_version, max_guests_limit, security_group_enabled) VALUES ('Ovm', 'default', 25, 1);
 INSERT IGNORE INTO `cloud`.`hypervisor_capabilities`(hypervisor_type, hypervisor_version, max_guests_limit, security_group_enabled) VALUES ('Ovm', '2.3', 25, 1);
@@ -1749,18 +1752,30 @@ CREATE TABLE `cloud`.`ovs_tunnel`(
   PRIMARY KEY(`from`, `to`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-CREATE TABLE `cloud`.`ovs_tunnel_account`(
+CREATE TABLE `cloud`.`ovs_tunnel_interface` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `ip` varchar(16) DEFAULT NULL,
+  `netmask` varchar(16) DEFAULT NULL,
+  `mac` varchar(18) DEFAULT NULL,
+  `host_id` bigint DEFAULT NULL,
+  `label` varchar(45) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+INSERT INTO `cloud`.`ovs_tunnel_interface` (`ip`, `netmask`, `mac`, `host_id`, `label`) VALUES ('0', '0', '0', 0, 'lock');
+
+CREATE TABLE `cloud`.`ovs_tunnel_network`(
   `id` bigint unsigned NOT NULL UNIQUE AUTO_INCREMENT,
   `from` bigint unsigned COMMENT 'from host id',
   `to` bigint unsigned COMMENT 'to host id',
-  `account` bigint unsigned COMMENT 'account',
+  `network_id` bigint unsigned COMMENT 'network identifier',
   `key` int unsigned COMMENT 'gre key',
   `port_name` varchar(32) COMMENT 'in port on open vswitch',
   `state` varchar(16) default 'FAILED' COMMENT 'result of tunnel creatation',
-  PRIMARY KEY(`from`, `to`, `account`)
+  PRIMARY KEY(`from`, `to`, `network_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-INSERT INTO `cloud`.`ovs_tunnel_account` (`from`, `to`, `account`, `key`, `port_name`, `state`) VALUES (0, 0, 0, 0, 'lock', 'SUCCESS');
+INSERT INTO `cloud`.`ovs_tunnel_network` (`from`, `to`, `network_id`, `key`, `port_name`, `state`) VALUES (0, 0, 0, 0, 'lock', 'SUCCESS');
 
 CREATE TABLE `cloud`.`ovs_vlan_mapping_dirty`(
   `id` bigint unsigned NOT NULL UNIQUE AUTO_INCREMENT,

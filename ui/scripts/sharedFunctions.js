@@ -200,10 +200,10 @@ function isValidJsonString(str) {
 cloudStack.validate = {
   vmHostName: function(args) {	  	
 		// 1 ~ 63 characters long 
-		// ASCII letters 'a' through 'z' (case-insensitive), digits '0' through '9', hyphen ('-') 
+		// ASCII letters 'a' through 'z', 'A' through 'Z', digits '0' through '9', hyphen ('-') 
 		// must start with a letter 
 		// must end with a letter or a digit (must not end with a hyphen)
-		var regexp = /^[a-z]{1}[a-z0-9\-]{0,61}[a-z0-9]{0,1}$/;
+		var regexp = /^[a-zA-Z]{1}[a-zA-Z0-9\-]{0,61}[a-zA-Z0-9]{0,1}$/;
     var b = regexp.test(args); //true or false		
 		if(b == false)
 	    cloudStack.dialog.notice({ message: 'message.validate.instance.name' });	
@@ -226,7 +226,21 @@ cloudStack.preFilter = {
       }
       args.$form.find('.form-item[rel=isFeatured]').hide();
     }
-  }
+  },
+	addLoadBalancerDevice: function(args) { //add netscaler device OR add F5 device	  
+		args.$form.bind('change', function() { 		  
+			var $dedicated = args.$form.find('.form-item[rel=dedicated]');
+			var $capacity = args.$form.find('.form-item[rel=capacity]');											
+			if($dedicated.find('input[type=checkbox]:checked').length > 0) {												
+				$capacity.hide();
+				$capacity.find('input[type=text]').val('1');
+			}
+			else if($dedicated.find('input[type=checkbox]:unchecked').length > 0) {
+				$capacity.css('display', 'inline-block');												
+			}			
+		});			
+		args.$form.change();		
+	}	
 }
 
 cloudStack.actionFilter = {

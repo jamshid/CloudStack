@@ -177,9 +177,13 @@ import com.cloud.network.ovs.OvsCreateGreTunnelCommand;
 import com.cloud.network.ovs.OvsCreateTunnelAnswer;
 import com.cloud.network.ovs.OvsCreateTunnelCommand;
 import com.cloud.network.ovs.OvsDeleteFlowCommand;
+import com.cloud.network.ovs.OvsDestroyBridgeCommand;
 import com.cloud.network.ovs.OvsDestroyTunnelCommand;
+import com.cloud.network.ovs.OvsFetchInterfaceAnswer;
+import com.cloud.network.ovs.OvsFetchInterfaceCommand;
 import com.cloud.network.ovs.OvsSetTagAndFlowAnswer;
 import com.cloud.network.ovs.OvsSetTagAndFlowCommand;
+import com.cloud.network.ovs.OvsSetupBridgeCommand;
 import com.cloud.resource.ServerResource;
 import com.cloud.resource.hypervisor.HypervisorResource;
 import com.cloud.storage.Storage;
@@ -208,6 +212,7 @@ import com.xensource.xenapi.HostMetrics;
 import com.xensource.xenapi.Network;
 import com.xensource.xenapi.PBD;
 import com.xensource.xenapi.PIF;
+import com.xensource.xenapi.PIF.Record;
 import com.xensource.xenapi.Pool;
 import com.xensource.xenapi.SR;
 import com.xensource.xenapi.Session;
@@ -476,6 +481,8 @@ public abstract class CitrixResourceBase implements ServerResource, HypervisorRe
             return execute((CheckSshCommand)cmd);
         } else if (clazz == SecurityGroupRulesCmd.class) {
             return execute((SecurityGroupRulesCmd) cmd);
+        } else if (clazz == OvsFetchInterfaceCommand.class) {
+            return execute((OvsFetchInterfaceCommand)cmd);
         } else if (clazz == OvsCreateGreTunnelCommand.class) {
             return execute((OvsCreateGreTunnelCommand)cmd);
         } else if (clazz == OvsSetTagAndFlowCommand.class) {
@@ -488,6 +495,10 @@ public abstract class CitrixResourceBase implements ServerResource, HypervisorRe
             return execute((NetworkRulesSystemVmCommand)cmd);
         } else if (clazz == OvsCreateTunnelCommand.class) {
             return execute((OvsCreateTunnelCommand)cmd);
+        } else if (clazz == OvsSetupBridgeCommand.class) {
+            return execute((OvsSetupBridgeCommand)cmd);
+        } else if (clazz == OvsDestroyBridgeCommand.class) {
+            return execute((OvsDestroyBridgeCommand)cmd);
         } else if (clazz == OvsDestroyTunnelCommand.class) {
             return execute((OvsDestroyTunnelCommand)cmd);
         } else if (clazz == UpdateHostPasswordCommand.class) {
@@ -549,21 +560,33 @@ public abstract class CitrixResourceBase implements ServerResource, HypervisorRe
         VIF dom0vif = null;
         Pair<VM, VM.Record> vm = getControlDomain(conn);
         VM dom0 = vm.first();
-
-        s_logger.debug("Create a vif on dom0 for " + networkDesc);
-        VIF.Record vifr = new VIF.Record();
-        vifr.VM = dom0;
-        vifr.device = getLowestAvailableVIFDeviceNum(conn, dom0);
-        if (vifr.device == null) {
-            s_logger.debug("Failed to create " + networkDesc + ", no vif available");
-            return;
+        // Create a VIF unless there's not already another VIF
+        Set<VIF> dom0Vifs = dom0.getVIFs(conn);
+        for (VIF vif:dom0Vifs) {
+        	vif.getRecord(conn);
+        	if (vif.getNetwork(conn).getUuid(conn) == nw.getUuid(conn)) {
+        		dom0vif = vif;
+        		s_logger.debug("A VIF for dom0 has already been found - No need to create one");
+        	}
         }
-        Map<String, String> config = new HashMap<String, String>();
-        config.put("nameLabel", vifNameLabel);
-        vifr.otherConfig = config;
-        vifr.MAC = "FE:FF:FF:FF:FF:FF";
-        vifr.network = nw;
-        dom0vif = VIF.create(conn, vifr);
+        if (dom0vif == null) {
+	        s_logger.debug("Create a vif on dom0 for " + networkDesc);
+	        VIF.Record vifr = new VIF.Record();
+	        vifr.VM = dom0;
+	        vifr.device = getLowestAvailableVIFDeviceNum(conn, dom0);
+	        if (vifr.device == null) {
+	            s_logger.debug("Failed to create " + networkDesc + ", no vif available");
+	            return;
+	        }
+	        Map<String, String> config = new HashMap<String, String>();
+	        config.put("nameLabel", vifNameLabel);
+	        vifr.otherConfig = config;
+	        vifr.MAC = "FE:FF:FF:FF:FF:FF";
+	        vifr.network = nw;
+	        
+	        dom0vif = VIF.create(conn, vifr);
+        }
+        // At this stage we surely have a VIF
         dom0vif.plug(conn);
         dom0vif.unplug(conn);
         synchronized(_tmpDom0Vif) {
@@ -599,30 +622,100 @@ public abstract class CitrixResourceBase implements ServerResource, HypervisorRe
         return null;
     }
 
-    private synchronized Network createTunnelNetwork(Connection conn, long account) {
+    /**
+     * This method just creates a XenServer network following the tunnel network naming convention
+     */
+    private synchronized Network findOrCreateTunnelNetwork(Connection conn, long key) {
         try {
-            String nwName = "OVSTunnel" + account;
+            String nwName = "OVSTunnel" + key;
             Network nw = null;
             Network.Record rec = new Network.Record();
             Set<Network> networks = Network.getByNameLabel(conn, nwName);
 
             if (networks.size() == 0) {
-                rec.nameDescription = "tunnel network for account " + account;
+                rec.nameDescription = "tunnel network id# " + key;
                 rec.nameLabel = nwName;
+                //Initialize the ovs-host-setup to avoid error when doing get-param in plugin
+                Map<String,String> otherConfig = new HashMap<String,String>();
+                otherConfig.put("ovs-host-setup", "");
+                rec.otherConfig = otherConfig;
                 nw = Network.create(conn, rec);
+                // Plug dom0 vif only when creating network
+                enableXenServerNetwork(conn, nw, nwName, "tunnel network for account " + key);
+                s_logger.debug("### Xen Server network for tunnels created:" + nwName);                
             } else {
                 nw = networks.iterator().next();
+                s_logger.debug("Xen Server network for tunnels found:" + nwName);                
             }
-
-            enableXenServerNetwork(conn, nw, nwName, "tunnel network for account " + account);
             return nw;
         } catch (Exception e) {
-            s_logger.warn("create tunnel network failed", e);
+            s_logger.warn("createTunnelNetwork failed", e);
             return null;
         }
     }
 
-
+    /**
+     * This method creates a XenServer network and configures it for being used as a L2-in-L3 tunneled network
+     */
+    private synchronized Network configureTunnelNetwork(Connection conn, long networkId, long hostId, int key) {
+    	try {
+	    	Network nw = findOrCreateTunnelNetwork(conn, key);
+	    	String nwName = "OVSTunnel" + key;
+	    	//Invoke plugin to setup the bridge which will be used by this network
+	        String bridge = nw.getBridge(conn);
+	        Map<String,String> nwOtherConfig = nw.getOtherConfig(conn);
+	        String configuredHosts = nwOtherConfig.get("ovs-host-setup");
+	        boolean configured = false;
+	        if (configuredHosts!=null) {
+	        	String hostIdsStr[] = configuredHosts.split(",");
+	        	for (String hostIdStr:hostIdsStr) {
+	        		if (hostIdStr.equals(((Long)hostId).toString())) {
+	        			configured = true;
+	        			break;
+	        		}
+	        	}
+	        }
+	        if (!configured) {
+	            // Plug dom0 vif only if not done before for network and host
+	            enableXenServerNetwork(conn, nw, nwName, "tunnel network for account " + key);
+	            String result = callHostPlugin(conn, "ovstunnel", "setup_ovs_bridge", "bridge", bridge,
+	            							   "key", String.valueOf(key),
+	            							   "xs_nw_uuid", nw.getUuid(conn),
+	            							   "cs_host_id", ((Long)hostId).toString());
+	            //Note down the fact that the ovs bridge has been setup
+	            String[] res = result.split(":");
+	            if (res.length != 2 || !res[0].equalsIgnoreCase("SUCCESS")) {
+	            	//TODO: Should make this error not fatal?
+	            	throw new CloudRuntimeException("Unable to pre-configure OVS bridge " + bridge + " for network ID:" + networkId +
+	            									" - " + res);
+	            }
+	        }
+	        return nw;
+        } catch (Exception e) {
+            s_logger.warn("createandConfigureTunnelNetwork failed", e);
+            return null;
+        }
+    }
+    
+    private synchronized void destroyTunnelNetwork(Connection conn, int key) {
+    	try {
+    		Network nw = findOrCreateTunnelNetwork(conn, key);
+            String bridge = nw.getBridge(conn);
+            String result = callHostPlugin(conn, "ovstunnel", "destroy_ovs_bridge", "bridge", bridge);
+            String[] res = result.split(":");
+            if (res.length != 2 || !res[0].equalsIgnoreCase("SUCCESS")) {
+            	//TODO: Should make this error not fatal?
+            	//Can Concurrent VM shutdown/migration/reboot events can cause this method
+            	//to be executed on a bridge which has already been removed?
+            	throw new CloudRuntimeException("Unable to remove OVS bridge " + bridge + ":" + res);
+            }
+            return;
+    	} catch (Exception e) {
+            s_logger.warn("destroyTunnelNetwork failed:", e);
+            return;
+    	}
+    }
+    
     protected Network getNetwork(Connection conn, NicTO nic) throws XenAPIException, XmlRpcException {
         String name = nic.getName();
         XsLocalNetwork network = getNativeNetworkForTraffic(conn, nic.getType(), name);
@@ -646,8 +739,8 @@ public abstract class CitrixResourceBase implements ServerResource, HypervisorRe
                 _isOvs = true;
                 return setupvSwitchNetwork(conn);
             } else {
-                long account = Long.parseLong(nic.getBroadcastUri().getHost());
-                return createTunnelNetwork(conn, account);
+                long vnetId = Long.parseLong(nic.getBroadcastUri().getHost());
+                return findOrCreateTunnelNetwork(conn, vnetId);
             }
         } else if (nic.getBroadcastType() == BroadcastDomainType.Storage) {
         	URI broadcastUri = nic.getBroadcastUri();
@@ -1111,6 +1204,7 @@ public abstract class CitrixResourceBase implements ServerResource, HypervisorRe
             startVM(conn, host, vm, vmName);
 
             if (_isOvs) {
+            	// TODO(Salvatore-orlando): This code should go
                 for (NicTO nic : vmSpec.getNics()) {
                     if (nic.getBroadcastType() == Networks.BroadcastDomainType.Vswitch) {
                         HashMap<String, String> args = parseDefaultOvsRuleComamnd(nic.getBroadcastUri().toString().substring(Networks.BroadcastDomainType.Vswitch.scheme().length() + "://".length()));
@@ -4701,11 +4795,28 @@ public abstract class CitrixResourceBase implements ServerResource, HypervisorRe
         return Boolean.valueOf(callHostPlugin(conn, "vmops", "can_bridge_firewall", "host_uuid", _host.uuid, "instance", _instance));
     }
 
+    
+    private Answer execute(OvsSetupBridgeCommand cmd) {
+        Connection conn = getConnection();
+        findOrCreateTunnelNetwork(conn, cmd.getKey());
+        configureTunnelNetwork(conn, cmd.getNetworkId(), cmd.getHostId(), cmd.getKey());
+        s_logger.debug("OVS Bridge configured");
+    	return new Answer(cmd, true, null);
+    }
+
+    private Answer execute(OvsDestroyBridgeCommand cmd) {
+        Connection conn = getConnection();
+        destroyTunnelNetwork(conn, cmd.getKey());
+        s_logger.debug("OVS Bridge destroyed");
+    	return new Answer(cmd, true, null);
+    }
+    
     private Answer execute(OvsDestroyTunnelCommand cmd) {
         Connection conn = getConnection();
         try {
-            Network nw = createTunnelNetwork(conn, cmd.getAccount());
+        	Network nw = findOrCreateTunnelNetwork(conn, cmd.getNetworkId());
             if (nw == null) {
+            	s_logger.warn("Unable to find tunnel network for GRE key:" + cmd.getKey());
                 return new Answer(cmd, false, "No network found");
             }
 
@@ -4732,15 +4843,16 @@ public abstract class CitrixResourceBase implements ServerResource, HypervisorRe
         Connection conn = getConnection();
         String bridge = "unknown";
         try {
-            Network nw = createTunnelNetwork(conn, cmd.getAccount());
+        	Network nw = findOrCreateTunnelNetwork(conn, cmd.getKey());
             if (nw == null) {
+            	s_logger.debug("Error during bridge setup");
                 return new OvsCreateTunnelAnswer(cmd, false, "Cannot create network", bridge);
             }
-
+        	
+            configureTunnelNetwork(conn, cmd.getNetworkId(), cmd.getFrom(), cmd.getKey());            
             bridge = nw.getBridge(conn);
-            String result = callHostPlugin(conn, "ovstunnel", "create_tunnel", "bridge", bridge, "remote_ip", cmd.getRemoteIp(), "key", cmd.getKey(), "from", cmd.getFrom().toString(), "to", cmd
-                    .getTo().toString());
-
+            String result = callHostPlugin(conn, "ovstunnel", "create_tunnel", "bridge", bridge, "remote_ip", cmd.getRemoteIp(), 
+            		                       "key", cmd.getKey().toString(), "from", cmd.getFrom().toString(), "to", cmd.getTo().toString());
             String[] res = result.split(":");
             if (res.length == 2 && res[0].equalsIgnoreCase("SUCCESS")) {
                 return new OvsCreateTunnelAnswer(cmd, true, result, res[1], bridge);
@@ -4748,7 +4860,8 @@ public abstract class CitrixResourceBase implements ServerResource, HypervisorRe
                 return new OvsCreateTunnelAnswer(cmd, false, result, bridge);
             }
         } catch (Exception e) {
-            s_logger.warn("caught execption when creating ovs tunnel", e);
+        	s_logger.debug("Error during tunnel setup");
+        	s_logger.warn("Caught execption when creating ovs tunnel", e);
             return new OvsCreateTunnelAnswer(cmd, false, e.getMessage(), bridge);
         }
     }
@@ -4833,6 +4946,28 @@ public abstract class CitrixResourceBase implements ServerResource, HypervisorRe
     }
 
 
+    private OvsFetchInterfaceAnswer execute(OvsFetchInterfaceCommand cmd) {
+        
+    	String label = cmd.getLabel();
+    	s_logger.debug("### Will look for network with name-label:" + label + " on host " + _host.ip);
+        Connection conn = getConnection();
+        try {
+            XsLocalNetwork nw = this.getNetworkByName(conn, label);
+            s_logger.debug("### Network object:" + nw.getNetwork().getUuid(conn));
+            PIF pif = nw.getPif(conn);
+            Record pifRec = pif.getRecord(conn);
+            s_logger.debug("### PIF object:" + pifRec.uuid + "(" + pifRec.device + ")");
+            return new OvsFetchInterfaceAnswer(cmd, true, "Interface " + pifRec.device + " retrieved successfully", 
+            		pifRec.IP, pifRec.netmask, pifRec.MAC);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new OvsFetchInterfaceAnswer(cmd, false, "EXCEPTION:" + e.getMessage());
+        }
+
+        
+    }
+
+    
     private OvsCreateGreTunnelAnswer execute(OvsCreateGreTunnelCommand cmd) {
         _isOvs = true;
 
@@ -5131,10 +5266,9 @@ public abstract class CitrixResourceBase implements ServerResource, HypervisorRe
         VDI vdi = null;
         try {
             SR poolSr = getStorageRepository(conn, pool);
-
             if (cmd.getTemplateUrl() != null) {
                 VDI tmpltvdi = null;
-
+                
                 tmpltvdi = getVDIbyUuid(conn, cmd.getTemplateUrl());
                 vdi = tmpltvdi.createClone(conn, new HashMap<String, String>());
                 vdi.setNameLabel(conn, dskch.getName());
