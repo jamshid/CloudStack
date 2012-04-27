@@ -5413,17 +5413,22 @@
                                   createForm: {
                                   id:'dialog-form',
                                   title:'Add New Nexus VSwitch',
+ 				  desc:'Please enter the below mentioned details ',
                                   fields :{
-                                       ipaddress: { label:'IP Address' ,validation: { required: true} },
-                                       username:  { label:'Username'},
-                                       password:  { label:'Password', type :'password'}
+                                       ipaddress: { label:'IP Address' , validation: { required: true} },
+                                       username:  { label:'Username', validation:{ required:true}},
+                                       password:  { label:'Password', isPassword:true , validation:{ required: true }}
 
                                            }
                                        }
                                    },
                                 messages: {
                                              notification : function() { return 'Nexus VSwitch added Successfully';}
-                                          }
+                                          },
+
+                                 action: function(args)  {
+                                  args.response.success({ data: args.data });
+                                        } 
 
                                   },
                                         dataProvider: function(args) {
