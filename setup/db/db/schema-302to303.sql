@@ -55,6 +55,14 @@ CREATE TABLE  `cloud`.`volume_host_ref` (
 INSERT IGNORE INTO `cloud`.`disk_offering` (name, display_text, customized, unique_name, disk_size, system_use) VALUES ( "Custom", "Custom Disk", 1, "Cloud.com-Custom", 0, 1);
 # Changes for OVS tunnel manager
 
+# The Following tables are not used anymore
+DROP TABLE IF EXISTS `cloud`.`ovs_host_vlan_alloc`;
+DROP TABLE IF EXISTS `cloud`.`ovs_tunnel`;
+DROP TABLE IF EXISTS `cloud`.`ovs_tunnel_alloc`;
+DROP TABLE IF EXISTS `cloud`.`ovs_vlan_mapping_dirty`;
+DROP TABLE IF EXISTS `cloud`.`ovs_vm_flow_log`;
+DROP TABLE IF EXISTS `cloud`.`ovs_work`;
+
 CREATE TABLE `cloud`.`ovs_tunnel_interface` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `ip` varchar(16) DEFAULT NULL,
@@ -79,3 +87,24 @@ CREATE TABLE `cloud`.`ovs_tunnel_network`(
 INSERT INTO `cloud`.`ovs_tunnel_interface` (`ip`, `netmask`, `mac`, `host_id`, `label`) VALUES ('0', '0', '0', 0, 'lock');
 
 INSERT INTO `cloud`.`ovs_tunnel_network` (`from`, `to`, `network_id`, `key`, `port_name`, `state`) VALUES (0, 0, 0, 0, 'lock', 'SUCCESS');
+
+UPDATE `cloud`.`configuration` set component='NetworkManager' where name='external.network.stats.interval';
+UPDATE `cloud`.`configuration` set category='Advanced' where name='guest.domain.suffix';
+UPDATE `cloud`.`configuration` set component='NetworkManager' where name='network.guest.cidr.limit';
+UPDATE `cloud`.`configuration` set component='NetworkManager' where name='router.cpu.mhz';
+UPDATE `cloud`.`configuration` set component='NetworkManager' where name='router.ram.size';
+UPDATE `cloud`.`configuration` set component='NetworkManager' where name='router.stats.interval';
+UPDATE `cloud`.`configuration` set component='NetworkManager' where name='router.template.id';
+UPDATE `cloud`.`configuration` set category='Advanced ' where name='capacity.skipcounting.hours';
+UPDATE `cloud`.`configuration` set category='Advanced ' where name='use.local.storage';
+UPDATE `cloud`.`configuration` set category='Hidden ' where name='router.ram.size';
+UPDATE `cloud`.`configuration` set category='Hidden ' where name='secondary.storage.vm';
+UPDATE `cloud`.`configuration` set category='Hidden ' where name='security.hash.key';
+
+DELETE FROM `cloud`.`configuration` WHERE name='direct.agent.pool.size';
+DELETE FROM `cloud`.`configuration` WHERE name='xen.max.product.version';
+DELETE FROM `cloud`.`configuration` WHERE name='xen.max.version';
+DELETE FROM `cloud`.`configuration` WHERE name='xen.max.xapi.version';
+DELETE FROM `cloud`.`configuration` WHERE name='xen.min.product.version';
+DELETE FROM `cloud`.`configuration` WHERE name='xen.min.version';
+DELETE FROM `cloud`.`configuration` WHERE name='xen.min.xapi.version';

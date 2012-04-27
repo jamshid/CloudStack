@@ -1719,8 +1719,8 @@
                 return str;
               },
               label: 'label.state', indicator: { 'Enabled': 'on', 'Disabled': 'off' }
-            },
-            vlan: { label: 'label.vlan.range' }
+            },            
+						isolationmethods: { label: 'label.isolation.method' }
           },
 
 					actions: {
@@ -6024,6 +6024,22 @@
             tabs: {
               details: {
                 title: 'label.details',
+								
+								preFilter: function(args) {								  
+                  var hiddenFields = [];
+                  $.ajax({
+									  url: createURL('listConfigurations&name=ha.tag'),
+										dataType: 'json',		
+                    async: false,										
+										success: function(json) {										  
+											if(json.listconfigurationsresponse.configuration == null || json.listconfigurationsresponse.configuration[0].value == null || json.listconfigurationsresponse.configuration[0].value.length == 0) {
+											  hiddenFields.push('hahost');
+											}
+										}
+									});														
+                  return hiddenFields;
+                },
+								
                 fields: [
                   {
                     name: { label: 'label.name' }
@@ -6032,16 +6048,15 @@
                     id: { label: 'label.id' },
                     resourcestate: { label: 'label.resource.state' },
                     state: { label: 'label.state' },
-                    type: { label: 'label.type' },
-                    zonename: { label: 'label.zone' },
-                    podname: { label: 'label.pod' },
-                    clustername: { label: 'label.cluster' },
-                    ipaddress: { label: 'label.ip.address' },
-                    version: { label: 'label.version' },
+                    type: { label: 'label.type' },                    
                     hosttags: {
                       label: 'label.host.tags',
                       isEditable: true
                     },
+										hahost: {
+										  label: 'label.ha.enabled',
+											converter: cloudStack.converters.toBooleanText
+										},
                     oscategoryid: {
                       label: 'label.os.preference',
                       isEditable: true,
@@ -6063,6 +6078,11 @@
                         });
                       }
                     },
+										zonename: { label: 'label.zone' },
+                    podname: { label: 'label.pod' },
+                    clustername: { label: 'label.cluster' },
+                    ipaddress: { label: 'label.ip.address' },
+                    version: { label: 'label.version' },
                     disconnected: { label: 'label.last.disconnected' }
                   }
                 ],
