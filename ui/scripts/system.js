@@ -5196,7 +5196,7 @@
 
           detailView: {
             viewAll: { path: '_zone.hosts', label: 'label.hosts' },
-
+            isMaximized:true,
             actions: {
               enable: {
                 label: 'label.action.enable.cluster',
@@ -5356,6 +5356,7 @@
 
             tabs: {
               details: {
+              
                 title: 'label.details',
                 fields: [
                   {
@@ -5391,6 +5392,64 @@
           }
         }
       },
+
+     nexusVswitch: {
+               title:'label.nexusVswitch',
+               listView: {
+                    fields: {
+
+                         name: { label: 'label.name' },
+                         type: { label: 'label.type' },
+                         zone: { label: 'label.zone' },
+                         status: { label: 'label.status'}
+
+
+                            },
+
+                     actions: {
+                            add: {
+                                  label:'Add Nexus Vswitch',
+                                  id:'vSwitch',
+                                  createForm: {
+                                  id:'dialog-form',
+                                  title:'Add New Nexus VSwitch',
+                                  fields :{
+                                       ipaddress: { label:'IP Address' ,validation: { required: true} },
+                                       username:  { label:'Username'},
+                                       password:  { label:'Password', type :'password'}
+
+                                           }
+                                       }
+                                   },
+                                messages: {
+                                             notification : function() { return 'Nexus VSwitch added Successfully';}
+                                          }
+
+                                  },
+                                        dataProvider: function(args) {
+                                                                        $.ajax({
+                                                                                url: createURL("listClusters&id=" + args.context.clusters[0].id),
+                                                                                dataType: "json",
+                                                                                success: function(json) {
+                                                                                        var item = json.listclustersresponse.cluster[0];
+                                                                                        addExtraPropertiesToClusterObject(item);
+                                                                                        args.response.success({
+                                                                                                actionFilter: clusterActionfilter,
+                                                                                                data: item
+                                                                                        });
+                                                                                }
+                                                                        });
+                                                   }
+
+                            }
+                     }
+
+                }
+             }
+         }
+      },
+
+
       hosts: {
         title: 'label.hosts',
         id: 'hosts',

@@ -2305,6 +2305,7 @@ dictionary = {
 'label.description': '<fmt:message key="label.description" />',
 'label.detaching.disk': '<fmt:message key="label.detaching.disk" />',
 'label.details': '<fmt:message key="label.details" />',
+'label.nexusVswitch': '<fmt:message key="label.nexusVswitch" />',
 'label.device.id': '<fmt:message key="label.device.id" />',
 'label.disabled': '<fmt:message key="label.disabled" />',
 'label.disabling.vpn.access': '<fmt:message key="label.disabling.vpn.access" />',
