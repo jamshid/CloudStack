@@ -5387,73 +5387,68 @@
 										}
 									});
                 }
+              },
+              nexusVswitch: {
+                title:'label.nexusVswitch',
+                listView: {
+                  fields: {
+                    name: { label: 'label.name' },
+                    type: { label: 'label.type' },
+                    zone: { label: 'label.zone' },
+                    state: { label: 'label.status' }
+                  },
+                  actions: {
+                    add: {
+                      label: 'Add Nexus Vswitch',
+                      id: 'vSwitch',
+                      createForm: {
+                        id: 'dialog-form',
+                        title: 'Add New Nexus VSwitch',
+                        desc: 'Please enter the below mentioned details ',
+                        fields: {
+                          ipaddress: { label: 'IP Address' , validation: { required: true }},
+                          username: { label: 'Username', validation: { required: true }},
+                          password: { label: 'Password', isPassword: true , validation: { required: true }}
+                        }
+                      },
+                      action: function(args) {
+                        args.response.success({
+                          _custom: {
+                            jobId: 0 // Replace with actual job ID once API is complete
+                          }
+                        })
+                      },
+                      notification: {
+                        // Replace with poll: pollAsyncJobResult once API is complete
+                        poll: function(args) {
+                          args.complete({ data: { state: 'Enabled' }})
+                        }
+                      },
+                      messages: {
+                        notification : function() { return 'Add Nexus vSwitch'; }
+                      }
+                    }
+                  },
+                  dataProvider: function(args) {
+                    $.ajax({
+                      url: createURL("listClusters&id=" + args.context.clusters[0].id),
+                      dataType: "json",
+                      success: function(json) {
+                        var item = json.listclustersresponse.cluster[0];
+                        addExtraPropertiesToClusterObject(item);
+                        args.response.success({
+                          actionFilter: clusterActionfilter,
+                          data: item
+                        });
+                      }
+                    });
+                  }
+                }
               }
             }
           }
         }
       },
-
-     nexusVswitch: {
-               title:'label.nexusVswitch',
-               listView: {
-                    fields: {
-
-                         name: { label: 'label.name' },
-                         type: { label: 'label.type' },
-                         zone: { label: 'label.zone' },
-                         status: { label: 'label.status'}
-
-
-                            },
-
-                     actions: {
-                            add: {
-                                  label:'Add Nexus Vswitch',
-                                  id:'vSwitch',
-                                  createForm: {
-                                  id:'dialog-form',
-                                  title:'Add New Nexus VSwitch',
- 				  desc:'Please enter the below mentioned details ',
-                                  fields :{
-                                       ipaddress: { label:'IP Address' , validation: { required: true} },
-                                       username:  { label:'Username', validation:{ required:true}},
-                                       password:  { label:'Password', isPassword:true , validation:{ required: true }}
-
-                                           }
-                                       }
-                                   },
-                                messages: {
-                                             notification : function() { return 'Nexus VSwitch added Successfully';}
-                                          },
-
-                                 action: function(args)  {
-                                  args.response.success({ data: args.data });
-                                        } 
-
-                                  },
-                                        dataProvider: function(args) {
-                                                                        $.ajax({
-                                                                                url: createURL("listClusters&id=" + args.context.clusters[0].id),
-                                                                                dataType: "json",
-                                                                                success: function(json) {
-                                                                                        var item = json.listclustersresponse.cluster[0];
-                                                                                        addExtraPropertiesToClusterObject(item);
-                                                                                        args.response.success({
-                                                                                                actionFilter: clusterActionfilter,
-                                                                                                data: item
-                                                                                        });
-                                                                                }
-                                                                        });
-                                                   }
-
-                            }
-                     }
-
-                }
-             }
-         }
-      },
-
 
       hosts: {
         title: 'label.hosts',
