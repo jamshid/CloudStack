@@ -5402,7 +5402,7 @@
                       label: 'Add Nexus Vswitch',
                       id: 'vSwitch',
                       createForm: {
-                        id: 'dialog-form',
+                      //  id: 'dialog-form',
                         title: 'Add New Nexus VSwitch',
                         desc: 'Please enter the below mentioned details ',
                         fields: {
@@ -5425,7 +5425,7 @@
                         }
                       },
                       messages: {
-                        notification : function() { return 'Add Nexus vSwitch'; }
+                        notification : function() { return 'Added Nexus Vswitch'; }
                       }
                     }
                   },
