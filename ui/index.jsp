@@ -317,7 +317,7 @@
                   <!-- Add to group -->
                   <div class="select odd">
                     <div class="name">
-                      <span><fmt:message key="label.add.to.group"/> (<fmt:message key="label.optional"/></span>
+                      <span><fmt:message key="label.add.to.group"/> (<fmt:message key="label.optional"/>)</span>
                     </div>
                     <div class="value">
                       <input type="text" name="groupname" />
@@ -392,7 +392,7 @@
                   <!-- Primary network -->
                   <div class="select odd">
                     <div class="name">
-                      <span><fmt:message key="label.primary.storage"/></span>
+                      <span><fmt:message key="label.network"/></span>
                     </div>
                     <div class="value">
                       <span wizard-field="default-network"></span>
@@ -951,9 +951,6 @@
         <div class="system-dashboard zone">
           <div class="head">
             <span><fmt:message key="label.menu.infrastructure"/></span>
-            <div class="view-all zones"
-                 view-all-title="Zones"
-                 view-all-target="zones"><span><fmt:message key="label.view.all"/></span></div>
           </div>
           <ul class="status_box good">
             <li class="block">
@@ -1642,6 +1639,7 @@
     <script src="scripts/ui-custom/securityRules.js" type="text/javascript"></script>
     <script src="scripts/network.js" type="text/javascript"></script>
     <script src="scripts/ui-custom/recurringSnapshots.js" type="text/javascript"></script>
+    <script src="scripts/ui-custom/uploadVolume.js" type="text/javascript"></script>
     <script src="scripts/storage.js" type="text/javascript"></script>
     <script src="scripts/templates.js" type="text/javascript"></script>
     <script src="scripts/accounts.js" type="text/javascript"></script>
@@ -1671,6 +1669,10 @@
 
 <script language="javascript">
 dictionary = {
+'message.specify.url': '<fmt:message key="message.specify.url"/>',
+'label.select.instance.to.attach.volume.to': '<fmt:message key="label.select.instance.to.attach.volume.to"/>',
+'label.upload': '<fmt:message key="label.upload"/>',
+'label.upload.volume': '<fmt:message key="label.upload.volume"/>',
 'label.virtual.routers': '<fmt:message key="label.virtual.routers"/>',
 'label.primary.storage.count': '<fmt:message key="label.primary.storage.count"/>',
 'label.secondary.storage.count': '<fmt:message key="label.secondary.storage.count"/>',
