@@ -6430,7 +6430,7 @@
 	                          var array1 = [];
 	                          array1.push("&zoneId=" + "1");
 	                          array1.push("&ipaddress=" + args.data.ipaddress);
-	                          //array1.push("&clusterId=" + args.data.clusterId);
+	                          //array1.push("&clusterId=" + args.context.clusters[0].id);
 	                          array1.push("&username=" + todb(args.data.nexusUsername));
 	                          array1.push("&password=" + todb(args.data.nexusPassword));
 	
