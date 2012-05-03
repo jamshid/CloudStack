@@ -6532,18 +6532,18 @@
                 }
               },
              'remove': {
-                label: 'label.action.delete.cluster' ,
+                label: 'label.action.delete.nexusVswitch' ,
                 messages: {
                   confirm: function(args) {
-                    return 'message.action.delete.cluster';
+                    return 'message.action.delete.nexusVswitch';
                   },
                   notification: function(args) {
-                    return 'label.action.delete.cluster';
+                    return 'label.action.delete.nexusVswitch';
                   }
                 },
                 action: function(args) {
                   $.ajax({
-                    url: createURL("deleteCluster&id=" + args.context.clusters[0].id),
+                    url: createURL("deleteCiscoNexusVSM&vsmdeviceid=" + "1"),
                     dataType: "json",
                     async: true,
                     success: function(json) {
