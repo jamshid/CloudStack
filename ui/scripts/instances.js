@@ -1703,43 +1703,7 @@
                 }
               });
             }
-          },
-
-        volume: {
-            title: 'label.volumes',
-            fields:{
-                id: { label: 'ID' },
-                state: { label: 'label.state' },
-                type: { label: 'label.type' },
-                storagetype: { label: 'label.storage.type' },
-                size: {
-                  label: 'label.size',
-                  converter: function(args) {
-                        if (args == null || args == 0)
-                          return "";
-                        else
-                          return cloudStack.converters.convertBytes(args);
-                  }
-                },
-                deviceid: { label: 'label.device.id' },
-                storage: { label: 'label.storage' },
-                created: { label: 'label.created' }
-            },
-            dataProvider: function(args) {
-                               $.ajax({
-                               url: createURL("listVolumes&domainid=" + args.context.instances[0].domainid),
-                               dataType: "json",
-                               async: true,
-                               success: function(json) {
-                               var jsonObj = json.listvolumesresponse.volume[0];
-                               args.response.success(
-                                 {
-                                    data: jsonObj
-                                  });
-                                                         }
-                                 });
-                                        }
-             }
+          }
 
         }
       }
