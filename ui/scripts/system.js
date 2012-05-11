@@ -6232,6 +6232,15 @@
           detailView: {
             viewAll: { path: '_zone.hosts', label: 'label.hosts' },
             isMaximized:true,
+            tabFilter:function(args) {
+
+                              var hypervisorType = args.context.clusters[0].hypervisortype;
+                              if(hypervisorType != 'VMWare') {
+                                  return ['nexusVswitch'];
+                             }
+                            return [];
+              },
+
             actions: {
               enable: {
                 label: 'label.action.enable.cluster',
