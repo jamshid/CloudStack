@@ -6103,6 +6103,7 @@
                           $form.find('.form-item[rel=vCenterUsername]').css('display', 'inline-block');
                           $form.find('.form-item[rel=vCenterPassword]').css('display', 'inline-block');
                           $form.find('.form-item[rel=vCenterDatacenter]').css('display', 'inline-block');
+                          $form.find('.form-item[rel=enableNexusVswitch]').css('display', 'inline-block');
 
                           //$("#cluster_name_label", $dialogAddCluster).text("vCenter Cluster:");
                         }
@@ -6112,6 +6113,11 @@
                           $form.find('.form-item[rel=vCenterUsername]').css('display', 'none');
                           $form.find('.form-item[rel=vCenterPassword]').css('display', 'none');
                           $form.find('.form-item[rel=vCenterDatacenter]').css('display', 'none');
+                          $form.find('.form-item[rel=enableNexusVswitch]').css('display', 'none');
+                          $('.form-item[rel=enableNexusVswitch] input').attr('checked', false);
+                          $form.find('.form-item[rel=nexusVswitchIpAddress]').css('display', 'none');
+                          $form.find('.form-item[rel=nexusVswitchUsername]').css('display', 'none');
+                          $form.find('.form-item[rel=nexusVswitchPassword]').css('display', 'none');
 
                           //$("#cluster_name_label", $dialogAddCluster).text("Cluster:");
                         }
@@ -6162,6 +6168,29 @@
                   vCenterDatacenter: {
                     label: 'label.vcenter.datacenter',
                     validation: { required: true }
+                  },
+                  enableNexusVswitch: {
+                    label: 'Add Nexus vSwitch',
+                    isBoolean: true
+                  },
+                  nexusVswitchIpAddress: {
+                    label: 'vSwitch IP Address',
+                    dependsOn: 'enableNexusVswitch',
+                    validation: { required: true },
+                    isHidden: true
+                  },
+                  nexusVswitchUsername: {
+                    label: 'vSwitch Username',
+                    dependsOn: 'enableNexusVswitch',
+                    validation: { required: true },
+                    isHidden: true
+                  },
+                  nexusVswitchPassword: {
+                    label: 'vSwitch Password',
+                    dependsOn: 'enableNexusVswitch',
+                    validation: { required: true },
+                    isPassword: true,
+                    isHidden: true
                   }
                   //hypervisor==VMWare ends here
                 }
