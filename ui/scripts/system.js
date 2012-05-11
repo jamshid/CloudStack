@@ -6479,97 +6479,126 @@
 	                        notification : function() { return 'Added Nexus Vswitch'; }
 	                      }
 
+                      }
+									},
+                
+									detailView: {
+										actions: {
+											enable: {
+												label: 'label.action.enable.cluster',
+												messages: {
+													confirm: function(args) {
+														return 'message.action.enable.cluster';
+													},
+													notification: function(args) {
+														return 'label.action.enable.cluster';
+													}
+												},
+												action: function(args) {
+													$.ajax({
+														url: createURL("updateCluster&id=" + args.context.clusters[0].id + "&allocationstate=Enabled"),
+														dataType: "json",
+														async: true,
+														success: function(json) {
+															var item = json.updateclusterresponse.cluster;
+															args.context.clusters[0].state = item.allocationstate;
+																																													addExtraPropertiesToClusterObject(item);
+															args.response.success({
+																actionFilter: clusterActionfilter,
+																data:item
+															});
+														}
+													});
+												},
+  											notification: {
+												  poll: function(args) {
+												  args.complete();
+												  }
+												}
+											},
+										  disable: {
+												label: 'label.action.disable.cluster',
+												messages: {
+													confirm: function(args) {
+														return 'message.action.disable.cluster';
+													},
+													notification: function(args) {
+														return 'label.action.disable.cluster';
+													}
+										    },
+												action: function(args) {
+													$.ajax({
+														url: createURL("updateCluster&id=" + args.context.clusters[0].id + "&allocationstate=Disabled"),
+														dataType: "json",
+														async: true,
+														success: function(json) {
+															var item = json.updateclusterresponse.cluster;
+															args.context.clusters[0].state = item.allocationstate;
+																																																addExtraPropertiesToClusterObject(item);
+															args.response.success({
+																actionFilter: clusterActionfilter,
+																data:item
+															});
+														}
+													});
+												},
+												notification: {
+													poll: function(args) {
+														args.complete();
+													}
+												}
+									    },
+										  'remove': {
+												label: 'label.action.delete.nexusVswitch' ,
+												messages: {
+													confirm: function(args) {
+														return 'message.action.delete.nexusVswitch';
+													},
+													notification: function(args) {
+														return 'label.action.delete.nexusVswitch';
+													}
+												},
+												action: function(args) {
+													$.ajax({
+														url: createURL("deleteCiscoNexusVSM&vsmdeviceid=" + "1"),
+														dataType: "json",
+														async: true,
+														success: function(json) {
+															args.response.success({data:{}});
+														}
+													});
+												},
+												notification: {
+													poll: function(args) { args.complete(); }
+												}
+											}
+										},
+										tabs: {
+											details: {
+												title: 'label.details',
+												fields: {
+													name: { label: 'label.name' },
+													type: { label: 'label.type' },
+													zonename: { label: 'label.zone' },
+													state: { label: 'label.status' }
+												},
+												dataProvider: function(args) {
+													$.ajax({
+														url: createURL("listClusters&id=" + args.context.clusters[0].id),
+														dataType: "json",
+														success: function(json) {
+															var item = json.listclustersresponse.cluster[0];
+															addExtraPropertiesToClusterObject(item);
+															args.response.success({
+																actionFilter: clusterActionfilter,
+																data: item
+															});
+														}
+													});
+												}
+											}
+										},
                   },
-
-                  enable: {
-                      label: 'label.action.enable.cluster',
-                      messages: {
-                        confirm: function(args) {
-                          return 'message.action.enable.cluster';
-                        },
-                        notification: function(args) {
-                        return 'label.action.enable.cluster';
-                        }
-                        },
-                        action: function(args) {
-                          $.ajax({
-                          url: createURL("updateCluster&id=" + args.context.clusters[0].id + "&allocationstate=Enabled"),
-                          dataType: "json",
-                          async: true,
-                          success: function(json) {
-                            var item = json.updateclusterresponse.cluster;
-                            args.context.clusters[0].state = item.allocationstate;
-                                                                                        addExtraPropertiesToClusterObject(item);
-                            args.response.success({
-                              actionFilter: clusterActionfilter,
-                              data:item
-                            });
-                          }
-                        });
-                       },
-                       notification: {
-                         poll: function(args) {
-                         args.complete();
-                         }
-                       }
-                     },
-                 disable: {
-                label: 'label.action.disable.cluster',
-                messages: {
-                  confirm: function(args) {
-                    return 'message.action.disable.cluster';
-                  },
-                  notification: function(args) {
-                    return 'label.action.disable.cluster';
-                  }
-                },
-                action: function(args) {
-                  $.ajax({
-                    url: createURL("updateCluster&id=" + args.context.clusters[0].id + "&allocationstate=Disabled"),
-                    dataType: "json",
-                    async: true,
-                    success: function(json) {
-                      var item = json.updateclusterresponse.cluster;
-                      args.context.clusters[0].state = item.allocationstate;
-                                                                                        addExtraPropertiesToClusterObject(item);
-                      args.response.success({
-                        actionFilter: clusterActionfilter,
-                        data:item
-                      });
-                    }
-                  });
-                },
-                notification: {
-                  poll: function(args) {
-                    args.complete();
-                  }
-                }
-              },
-             'remove': {
-                label: 'label.action.delete.nexusVswitch' ,
-                messages: {
-                  confirm: function(args) {
-                    return 'message.action.delete.nexusVswitch';
-                  },
-                  notification: function(args) {
-                    return 'label.action.delete.nexusVswitch';
-                  }
-                },
-                action: function(args) {
-                  $.ajax({
-                    url: createURL("deleteCiscoNexusVSM&vsmdeviceid=" + "1"),
-                    dataType: "json",
-                    async: true,
-                    success: function(json) {
-                      args.response.success({data:{}});
-                    }
-                  });
-                },
-                notification: {
-                  poll: function(args) { args.complete(); }
-                }
-               }
-              },
 
                   dataProvider: function(args) {
                     $.ajax({
