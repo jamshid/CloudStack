@@ -6103,6 +6103,7 @@
                           $form.find('.form-item[rel=vCenterUsername]').css('display', 'inline-block');
                           $form.find('.form-item[rel=vCenterPassword]').css('display', 'inline-block');
                           $form.find('.form-item[rel=vCenterDatacenter]').css('display', 'inline-block');
+                          $form.find('.form-item[rel=enableNexusVswitch]').css('display', 'inline-block');
 
                           //$("#cluster_name_label", $dialogAddCluster).text("vCenter Cluster:");
                         }
@@ -6112,6 +6113,11 @@
                           $form.find('.form-item[rel=vCenterUsername]').css('display', 'none');
                           $form.find('.form-item[rel=vCenterPassword]').css('display', 'none');
                           $form.find('.form-item[rel=vCenterDatacenter]').css('display', 'none');
+                          $form.find('.form-item[rel=enableNexusVswitch]').css('display', 'none');
+                          $('.form-item[rel=enableNexusVswitch] input').attr('checked', false);
+                          $form.find('.form-item[rel=nexusVswitchIpAddress]').css('display', 'none');
+                          $form.find('.form-item[rel=nexusVswitchUsername]').css('display', 'none');
+                          $form.find('.form-item[rel=nexusVswitchPassword]').css('display', 'none');
 
                           //$("#cluster_name_label", $dialogAddCluster).text("Cluster:");
                         }
@@ -6162,6 +6168,29 @@
                   vCenterDatacenter: {
                     label: 'label.vcenter.datacenter',
                     validation: { required: true }
+                  },
+                  enableNexusVswitch: {
+                    label: 'Add Nexus vSwitch',
+                    isBoolean: true
+                  },
+                  nexusVswitchIpAddress: {
+                    label: 'vSwitch IP Address',
+                    dependsOn: 'enableNexusVswitch',
+                    validation: { required: true },
+                    isHidden: true
+                  },
+                  nexusVswitchUsername: {
+                    label: 'vSwitch Username',
+                    dependsOn: 'enableNexusVswitch',
+                    validation: { required: true },
+                    isHidden: true
+                  },
+                  nexusVswitchPassword: {
+                    label: 'vSwitch Password',
+                    dependsOn: 'enableNexusVswitch',
+                    validation: { required: true },
+                    isPassword: true,
+                    isHidden: true
                   }
                   //hypervisor==VMWare ends here
                 }
@@ -6442,28 +6471,28 @@
                     state: { label: 'label.status' }
                   },
                   actions: {
-                	  add: {
-	                      label: 'Add Nexus Vswitch',
-	                      id: 'vSwitch',
-	                      createForm: {
-	                      //  id: 'dialog-form',
-	                        title: 'Add New Nexus VSwitch',
-	                        desc: 'Please enter the below mentioned details ',
-	                        fields: {
-	                          ipaddress: { label: 'IP Address' , validation: { required: true }},
-	                          nexusUsername: { label: 'Username', validation: { required: true }},
-	                          nexusPassword: { label: 'Password', isPassword: true , validation: { required: true }}
-	                        }
-	                      },
-	                      action: function(args) {
-	                          var array1 = [];
-	                          array1.push("&zoneId=" + "1");
-	                          array1.push("&ipaddress=" + args.data.ipaddress);
-	                          //array1.push("&clusterId=" + args.context.clusters[0].id);
-	                          array1.push("&username=" + todb(args.data.nexusUsername));
-	                          array1.push("&password=" + todb(args.data.nexusPassword));
-	
-	                                $.ajax({
+                    add: {
+	              label: 'Add Nexus Vswitch',
+	              id: 'vSwitch',
+	              createForm: {
+	              //  id: 'dialog-form',
+	                title: 'Add New Nexus VSwitch',
+	                desc: 'Please enter the below mentioned details ',
+	                fields: {
+	                  ipaddress: { label: 'IP Address' , validation: { required: true }},
+	                  nexusUsername: { label: 'Username', validation: { required: true }},
+	                  nexusPassword: { label: 'Password', isPassword: true , validation: { required: true }}
+	                }
+	              },
+	              action: function(args) {
+	                var array1 = [];
+	                array1.push("&zoneId=" + "1");
+	                array1.push("&ipaddress=" + args.data.ipaddress);
+	                //array1.push("&clusterId=" + args.context.clusters[0].id);
+	                array1.push("&username=" + todb(args.data.nexusUsername));
+	                array1.push("&password=" + todb(args.data.nexusPassword));
+
+                                      $.ajax({
 	                                url: createURL("addCiscoNexusVSM" + array1.join("")),
 	                                dataType: "json",
 	                                //async: true,
@@ -6477,108 +6506,141 @@
 	                                  var errorMsg = parseXMLHttpResponse(XMLHttpResponse);
 	                                  args.response.error(errorMsg);
 	                                }
-	                                });
-	                      },
-	                      notification: {
-	                        poll: function(args) {
-	                          args.complete({ data: { state: 'Enabled' }})
-	                        }
-	                      },
-	                      messages: {
-	                        notification : function() { return 'Added Nexus Vswitch'; }
-	                      }
+	                              });
+	              },
+	              notification: {
+	                poll: function(args) {
+	                  args.complete({ data: { state: 'Enabled' }})
+	                }
+	              },
+	              messages: {
+	                notification : function() { return 'Added Nexus Vswitch'; }
+	              }
+                    }
+		  },
+                
+                  detailView: {
+                    actions: {
 
-                  },
-
-                  enable: {
-                      label: 'label.action.enable.cluster',
-                      messages: {
-                        confirm: function(args) {
-                          return 'message.action.enable.cluster';
-                        },
-                        notification: function(args) {
-                        return 'label.action.enable.cluster';
-                        }
+                      enable: {
+                        label: 'label.action.enable.cluster',
+                        messages: {
+                          confirm: function(args) {
+                            return 'message.action.enable.cluster';
+                          },
+                          notification: function(args) {
+                          return 'label.action.enable.cluster';
+			  }
                         },
                         action: function(args) {
                           $.ajax({
-                          url: createURL("updateCluster&id=" + args.context.clusters[0].id + "&allocationstate=Enabled"),
-                          dataType: "json",
-                          async: true,
-                          success: function(json) {
-                            var item = json.updateclusterresponse.cluster;
-                            args.context.clusters[0].state = item.allocationstate;
-                                                                                        addExtraPropertiesToClusterObject(item);
-                            args.response.success({
-                              actionFilter: clusterActionfilter,
-                              data:item
-                            });
+                            url: createURL("updateCluster&id=" + args.context.clusters[0].id + "&allocationstate=Enabled"),
+                            dataType: "json",
+                            async: true,
+                            success: function(json) {
+                              var item = json.updateclusterresponse.cluster;
+                              args.context.clusters[0].state = item.allocationstate;
+                                                                 addExtraPropertiesToClusterObject(item);
+                              args.response.success({
+                                actionFilter: clusterActionfilter,
+                                data:item
+                              });
+                            }
+                          });
+                        },
+                        notification: {
+                          poll: function(args) {
+                            args.complete();
                           }
-                        });
-                       },
-                       notification: {
-                         poll: function(args) {
-                         args.complete();
-                         }
-                       }
-                     },
-                 disable: {
-                label: 'label.action.disable.cluster',
-                messages: {
-                  confirm: function(args) {
-                    return 'message.action.disable.cluster';
+                        }
+                      },
+
+                      disable: {
+                        label: 'label.action.disable.cluster',
+                        messages: {
+                          confirm: function(args) {
+                            return 'message.action.disable.cluster';
+                          },
+                          notification: function(args) {
+                            return 'label.action.disable.cluster';
+                          }
+                        },
+                        action: function(args) {
+                          $.ajax({
+                            url: createURL("updateCluster&id=" + args.context.clusters[0].id + "&allocationstate=Disabled"),
+                            dataType: "json",
+                            async: true,
+                            success: function(json) {
+                              var item = json.updateclusterresponse.cluster;
+                              args.context.clusters[0].state = item.allocationstate;
+                                                                      addExtraPropertiesToClusterObject(item);
+                              args.response.success({
+                                actionFilter: clusterActionfilter,
+                                data:item
+                              });
+                            }
+                          });
+                        },
+                        notification: {
+                          poll: function(args) {
+                            args.complete();
+                          }
+                        }
+                      },
+
+                      'remove': {
+                        label: 'label.action.delete.nexusVswitch' ,
+                        messages: {
+                          confirm: function(args) {
+                            return 'message.action.delete.nexusVswitch';
+                          },
+                          notification: function(args) {
+                            return 'label.action.delete.nexusVswitch';
+                          }
+                        },
+                        action: function(args) {
+                          $.ajax({
+                            url: createURL("deleteCiscoNexusVSM&vsmdeviceid=" + "1"),
+                            dataType: "json",
+                            async: true,
+                            success: function(json) {
+                              args.response.success({data:{}});
+                            }
+                          });
+                        },
+                        notification: {
+                          poll: function(args) { args.complete(); }
+                        }
+                      }
+                    },
+
+                    tabs: {
+                      details: {
+                        title: 'label.details',
+                        fields: {
+                          name: { label: 'label.name' },
+                          type: { label: 'label.type' },
+                          zonename: { label: 'label.zone' },
+                          state: { label: 'label.status' }
+                        },
+                  
+                        dataProvider: function(args) {
+                          $.ajax({
+                            url: createURL("listClusters&id=" + args.context.clusters[0].id),
+                            dataType: "json",
+                            success: function(json) {
+                              var item = json.listclustersresponse.cluster[0];
+                                                                      addExtraPropertiesToClusterObject(item);
+                              args.response.success({
+                                actionFilter: clusterActionfilter,
+                                data: item
+                              });
+                            }
+                          });
+                        }
+                      }
+                    },
                   },
-                  notification: function(args) {
-                    return 'label.action.disable.cluster';
-                  }
-                },
-                action: function(args) {
-                  $.ajax({
-                    url: createURL("updateCluster&id=" + args.context.clusters[0].id + "&allocationstate=Disabled"),
-                    dataType: "json",
-                    async: true,
-                    success: function(json) {
-                      var item = json.updateclusterresponse.cluster;
-                      args.context.clusters[0].state = item.allocationstate;
-                                                                                        addExtraPropertiesToClusterObject(item);
-                      args.response.success({
-                        actionFilter: clusterActionfilter,
-                        data:item
-                      });
-                    }
-                  });
-                },
-                notification: {
-                  poll: function(args) {
-                    args.complete();
-                  }
-                }
-              },
-             'remove': {
-                label: 'label.action.delete.nexusVswitch' ,
-                messages: {
-                  confirm: function(args) {
-                    return 'message.action.delete.nexusVswitch';
-                  },
-                  notification: function(args) {
-                    return 'label.action.delete.nexusVswitch';
-                  }
-                },
-                action: function(args) {
-                  $.ajax({
-                    url: createURL("deleteCiscoNexusVSM&vsmdeviceid=" + "1"),
-                    dataType: "json",
-                    async: true,
-                    success: function(json) {
-                      args.response.success({data:{}});
-                    }
-                  });
-                },
-                notification: {
-                  poll: function(args) { args.complete(); }
-                }
-               }
-              },
 
                   dataProvider: function(args) {
                     $.ajax({
