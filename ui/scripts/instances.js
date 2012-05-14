@@ -1702,6 +1702,7 @@
           },
           volume: {
             title: 'label.volumes',
+            multiple: true,
             fields:{
                 id: { label: 'ID' },
                 state: { label: 'label.state' },
@@ -1727,7 +1728,7 @@
                                                                                 dataType: "json",
                                                                                 async: true,
                                                                                 success: function(json) {
-                                                                                        var jsonObj = json.listvolumesresponse.volume[0];
+                                                                                        var jsonObj = json.listvolumesresponse.volume;
                                                                                         args.response.success({
                                                                                                                data: jsonObj
                                                                                         });
