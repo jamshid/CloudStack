@@ -6262,11 +6262,20 @@
             viewAll: { path: '_zone.hosts', label: 'label.hosts' },
             isMaximized:true,
             tabFilter:function(args) {
+                              var vSwichConfigEnabled;
+                              $.ajax({
+                                url: createURL('listConfigurations'),
+                                data: { name: 'vmware.use.nexus.vswitch' },
+                                async: false,
+                                success: function(json) {
+                                  vSwichConfigEnabled = json.listconfigurationsresponse.configuration[0].value;
+                                }
+                              });
 
                               var hypervisorType = args.context.clusters[0].hypervisortype;
-                              if(hypervisorType != 'VMWare') {
+                              if(vSwichConfigEnabled != "true" && hypervisorType != 'VMware') {
                                   return ['nexusVswitch'];
-                             }
+                              }
                             return [];
               },
 
