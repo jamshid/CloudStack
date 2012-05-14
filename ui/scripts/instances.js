@@ -1722,7 +1722,8 @@
           },
           dataProvider: function(args) {
                                                                        $.ajax({
-                                                                                url: createURL("listVolumes&domainid=" + args.context.instances[0].domainid),
+                                                                                url: createURL("listVolumes"),
+                                                                                data: { virtualmachineid: args.context.instances[0].id },
                                                                                 dataType: "json",
                                                                                 async: true,
                                                                                 success: function(json) {
