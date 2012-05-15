@@ -6532,13 +6532,13 @@
                     actions: {
 
                       enable: {
-                        label: 'label.action.enable.NexusVswitch',
+                        label: 'label.action.enable.nexusVswitch',
                         messages: {
                           confirm: function(args) {
-                            return 'message.action.enable.NexusVswitch';
+                            return 'message.action.enable.nexusVswitch';
                           },
                           notification: function(args) {
-                          return 'label.action.enable.NexusVswitch';
+                          return 'label.action.enable.nexusVswitch';
 			  }
                         },
                         action: function(args) {
@@ -6565,13 +6565,13 @@
                       },
 
                       disable: {
-                        label: 'label.action.disable.NexusVswitch',
+                        label: 'label.action.disable.nexusVswitch',
                         messages: {
                           confirm: function(args) {
-                            return 'message.action.disable.NexusVswitch';
+                            return 'message.action.disable.nexusVswitch';
                           },
                           notification: function(args) {
-                            return 'label.action.disable.NexusVswitch';
+                            return 'label.action.disable.nexusVswitch';
                           }
                         },
                         action: function(args) {
