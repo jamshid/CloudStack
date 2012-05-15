@@ -6474,7 +6474,7 @@
                 title:'label.nexusVswitch',
                 listView: {
                   fields: {
-                    name: { label: 'label.name' },
+                    vsmdeviceid: { label: 'label.name' },
                     type: { label: 'label.type' },
                     zonename: { label: 'label.zone' },
                     state: { label: 'label.status' }
@@ -6653,11 +6653,10 @@
 
                   dataProvider: function(args) {
                     $.ajax({
-                      url: createURL("listClusters&id=" + args.context.clusters[0].id),
+                      url: createURL("getCiscoVSMByClusterId&id=" + args.context.clusters[0].id),
                       dataType: "json",
                       success: function(json) {
-                        var item = json.listclustersresponse.cluster[0];
-                        addExtraPropertiesToClusterObject(item);
+                        var item = json.getciscovsmbyclusteridcmdresponse.cisconexusvsm;
                         args.response.success({
                           actionFilter: clusterActionfilter,
                           data: item
