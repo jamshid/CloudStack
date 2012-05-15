@@ -2104,7 +2104,6 @@ dictionary = {
 'label.action.delete.nexusVswitch': '<fmt:message key="label.action.delete.nexusVswitch" />',
 'label.action.enable.nexusVswitch': '<fmt:message key="label.action.enable.nexusVswitch" />',
 'label.action.disable.nexusVswitch': '<fmt:message key="label.action.disable.nexusVswitch" />',
-'label.action.list.nexusVswitch': '<fmt:message key="label.action.list.nexusVswitch" />',
 'label.action.delete.pod.processing': '<fmt:message key="label.action.delete.pod.processing" />',
 'label.action.delete.pod': '<fmt:message key="label.action.delete.pod" />',
 'label.action.delete.primary.storage.processing': '<fmt:message key="label.action.delete.primary.storage.processing" />',
