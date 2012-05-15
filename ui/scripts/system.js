@@ -6543,15 +6543,15 @@
                         },
                         action: function(args) {
                           $.ajax({
-                            url: createURL("enableCiscoNexusVSM&id=" + args.context.clusters[0].id "),
+                            url: createURL("enableCiscoNexusVSM&id=" + args.context.undefined[0].vsmdeviceid),
                             dataType: "json",
                             async: true,
                             success: function(json) {
-                              var item = json.updateclusterresponse.cluster;
+                              var item = json.getciscovsmbyclusteridcmdresponse.cisconexusvsm;
                               args.context.clusters[0].state = item.allocationstate;
                                                                  addExtraPropertiesToClusterObject(item);
                               args.response.success({
-                                actionFilter: clusterActionfilter,
+                                actionFilter: podActionfilter,
                                 data:item
                               });
                             }
@@ -6576,15 +6576,15 @@
                         },
                         action: function(args) {
                           $.ajax({
-                            url: createURL("disableCiscoNexusVSM&id=" + args.context.clusters[0].id "),
+                            url: createURL("disableCiscoNexusVSM&id=" + args.context.undefined[0].vsmdeviceid ),
                             dataType: "json",
                             async: true,
                             success: function(json) {
-                              var item = json.updateclusterresponse.cluster;
+                              var item = json.getciscovsmbyclusteridcmdresponse.cisconexusvsm; 
                               args.context.clusters[0].state = item.allocationstate;
                                                                       addExtraPropertiesToClusterObject(item);
                               args.response.success({
-                                actionFilter: clusterActionfilter,
+                                actionFilter: podActionfilter,
                                 data:item
                               });
                             }
@@ -6609,7 +6609,7 @@
                         },
                         action: function(args) {
                           $.ajax({
-                            url: createURL("deleteCiscoNexusVSM&id=" + args.context.clusters[0].id),
+                            url: createURL("deleteCiscoNexusVSM&id=" + args.context.undefined[0].vsmdeviceid),
                             dataType: "json",
                             async: true,
                             success: function(json) {
