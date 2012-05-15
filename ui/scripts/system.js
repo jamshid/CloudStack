@@ -6609,7 +6609,7 @@
                         },
                         action: function(args) {
                           $.ajax({
-                            url: createURL("deleteCiscoNexusVSM&id=" + args.context.clusters[0].id),
+                            url: createURL("deleteCiscoNexusVSM&id=" + args.context.undefined[0].vsmdeviceid),
                             dataType: "json",
                             async: true,
                             success: function(json) {
