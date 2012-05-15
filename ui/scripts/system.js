@@ -6525,25 +6525,25 @@
 	              messages: {
 	                notification : function() { return 'Added Nexus Vswitch'; }
 	              }
-                    }
+                    }     
 		  },
                 
                   detailView: {
                     actions: {
 
                       enable: {
-                        label: 'label.action.enable.cluster',
+                        label: 'label.action.enable.NexusVswitch',
                         messages: {
                           confirm: function(args) {
-                            return 'message.action.enable.cluster';
+                            return 'message.action.enable.NexusVswitch';
                           },
                           notification: function(args) {
-                          return 'label.action.enable.cluster';
+                          return 'label.action.enable.NexusVswitch';
 			  }
                         },
                         action: function(args) {
                           $.ajax({
-                            url: createURL("updateCluster&id=" + args.context.clusters[0].id + "&allocationstate=Enabled"),
+                            url: createURL("enableCiscoNexusVSM&id=" + args.context.clusters[0].id "),
                             dataType: "json",
                             async: true,
                             success: function(json) {
@@ -6565,18 +6565,18 @@
                       },
 
                       disable: {
-                        label: 'label.action.disable.cluster',
+                        label: 'label.action.disable.NexusVswitch',
                         messages: {
                           confirm: function(args) {
-                            return 'message.action.disable.cluster';
+                            return 'message.action.disable.NexusVswitch';
                           },
                           notification: function(args) {
-                            return 'label.action.disable.cluster';
+                            return 'label.action.disable.NexusVswitch';
                           }
                         },
                         action: function(args) {
                           $.ajax({
-                            url: createURL("updateCluster&id=" + args.context.clusters[0].id + "&allocationstate=Disabled"),
+                            url: createURL("disableCiscoNexusVSM&id=" + args.context.clusters[0].id "),
                             dataType: "json",
                             async: true,
                             success: function(json) {
@@ -6609,7 +6609,7 @@
                         },
                         action: function(args) {
                           $.ajax({
-                            url: createURL("deleteCiscoNexusVSM&vsmdeviceid=" + "1"),
+                            url: createURL("deleteCiscoNexusVSM&id=" + args.context.clusters[0].id),
                             dataType: "json",
                             async: true,
                             success: function(json) {
