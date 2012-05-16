@@ -6479,54 +6479,7 @@
                     zonename: { label: 'label.zone' },
                     state: { label: 'label.status' }
                   },
-                  actions: {
-                    add: {
-	              label: 'Add Nexus Vswitch',
-	              id: 'vSwitch',
-	              createForm: {
-	              //  id: 'dialog-form',
-	                title: 'Add New Nexus VSwitch',
-	                desc: 'Please enter the below mentioned details ',
-	                fields: {
-	                  ipaddress: { label: 'IP Address' , validation: { required: true }},
-	                  nexusUsername: { label: 'Username', validation: { required: true }},
-	                  nexusPassword: { label: 'Password', isPassword: true , validation: { required: true }}
-	                }
-	              },
-	              action: function(args) {
-	                var array1 = [];
-	                array1.push("&zoneId=" + "1");
-	                array1.push("&ipaddress=" + args.data.ipaddress);
-	                //array1.push("&clusterId=" + args.context.clusters[0].id);
-	                array1.push("&username=" + todb(args.data.nexusUsername));
-	                array1.push("&password=" + todb(args.data.nexusPassword));
-
-                                      $.ajax({
-	                                url: createURL("addCiscoNexusVSM" + array1.join("")),
-	                                dataType: "json",
-	                                //async: true,
-	                                success: function(json) {
-	                                  var item = json.addciscon1kvvsmresponse.jobid;
-	                                  args.response.success({
-	                                           data:item
-	                                  });
-	                                },
-	                                error: function(XMLHttpResponse) {
-	                                  var errorMsg = parseXMLHttpResponse(XMLHttpResponse);
-	                                  args.response.error(errorMsg);
-	                                }
-	                              });
-	              },
-	              notification: {
-	                poll: function(args) {
-	                  args.complete({ data: { state: 'Enabled' }})
-	                }
-	              },
-	              messages: {
-	                notification : function() { return 'Added Nexus Vswitch'; }
-	              }
-                    }     
-		  },
+       
                 
                   detailView: {
                     actions: {
