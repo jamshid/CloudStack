@@ -6271,20 +6271,9 @@
                   vSwichConfigEnabled = json.listconfigurationsresponse.configuration[0].value;
                 }
               });
-              $.ajax({
-                url: createURL("getCiscoVSMByClusterId&id=" + args.context.clusters[0].id),
-                dataType: "json",
-                async: false,
-                success: function(json) {
-                  vSwitchPresentOnCluster = true;
-                },
-                error: function(json) {
-                  vSwitchPresentOnCluster = false;
-                }
-              });
 
               var hypervisorType = args.context.clusters[0].hypervisortype;
-              if(vSwichConfigEnabled != "true" || hypervisorType != 'VMware' || !vSwitchPresentOnCluster) {
+              if(vSwichConfigEnabled != "true" || hypervisorType != 'VMware') {
                 return ['nexusVswitch'];
               }
               return [];
@@ -6678,8 +6667,8 @@
                         });
                       },
                       error: function(json) {
-                        cloudStack.dialog.notice({ message: parseXMLHttpResponse(json) });
-                        args.response.error(parseXMLHttpResponse(json));
+                        // Not generally a real error; means vSwitch still needs setup
+                        args.response.success({ data: [] });
                       }
                     });
                   }
