@@ -222,7 +222,12 @@ cloudStack.preFilter = {
       args.$form.find('.form-item[rel=isFeatured]').css('display', 'inline-block');
     }
     else {
-      args.$form.find('.form-item[rel=isPublic]').hide();
+      if (g_userPublicTemplateEnabled == "true") {
+        args.$form.find('.form-item[rel=isPublic]').css('display', 'inline-block');
+      }
+      else {
+        args.$form.find('.form-item[rel=isPublic]').hide();
+      }
       args.$form.find('.form-item[rel=isFeatured]').hide();
     }
   },
