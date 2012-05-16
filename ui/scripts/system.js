@@ -6486,77 +6486,8 @@
                     zonename: { label: 'label.zone' },
                     state: { label: 'label.status' }
                   },
-
-       
-                
-                  actions: {
-                    add: {
-	                    label: 'Add Nexus Vswitch',
-	                    id: 'vSwitch',
-	                    createForm: {
-	                      //  id: 'dialog-form',
-	                      title: 'Add New Nexus VSwitch',
-	                      desc: 'Please enter the below mentioned details ',
-	                      fields: {
-	                        ipaddress: { label: 'IP Address' , validation: { required: true }},
-	                        username: { label: 'Username', validation: { required: true }},
-	                        password: { label: 'Password', isPassword: true , validation: { required: true }},
-                          vcenteripaddr: {
-                            label: 'label.vcenter.host',
-                            validation: { required: true }
-                          },
-                          vcenterusername: {
-                            label: 'label.vcenter.username',
-                            validation: { required: true }
-                          },
-                          vcenterpassword: {
-                            label: 'label.vcenter.password',
-                            validation: { required: true },
-                            isPassword: true
-                          },
-                          vcenterdcname: {
-                            label: 'label.vcenter.datacenter',
-                            validation: { required: true }
-                          }
-	                      }
-	                    },
-	                    action: function(args) {
-                        var data = $.extend(args.data, {
-                          id: args.context.clusters[0].id
-                        });
-
-                        $.ajax({
-	                        url: createURL("addCiscoNexusVSM"),
-                          data: data,
-	                        dataType: "json",
-	                        //async: true,
-	                        success: function(json) {
-	                          var item = json.addciscon1kvvsmresponse.jobid;
-	                          args.response.success({
-	                            data:item
-	                          });
-	                        },
-	                        error: function(XMLHttpResponse) {
-	                          var errorMsg = parseXMLHttpResponse(XMLHttpResponse);
-	                          args.response.error(errorMsg);
-	                        }
-	                      });
-	                    },
-	                    notification: {
-	                      poll: function(args) {
-	                        args.complete({ data: { state: 'Enabled' }});
-	                      }
-	                    },
-	                    messages: {
-	                      notification : function() { return 'Added Nexus Vswitch'; }
-	                    }
-                    }     
-		              },
-                  
-
                   detailView: {
                     actions: {
-
                       enable: {
                         label: 'label.action.enable.nexusVswitch',
                         messages: {
