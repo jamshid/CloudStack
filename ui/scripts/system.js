@@ -6490,20 +6490,35 @@
 	                      desc: 'Please enter the below mentioned details ',
 	                      fields: {
 	                        ipaddress: { label: 'IP Address' , validation: { required: true }},
-	                        nexusUsername: { label: 'Username', validation: { required: true }},
-	                        nexusPassword: { label: 'Password', isPassword: true , validation: { required: true }}
+	                        username: { label: 'Username', validation: { required: true }},
+	                        password: { label: 'Password', isPassword: true , validation: { required: true }},
+                          vcenteripaddr: {
+                            label: 'label.vcenter.host',
+                            validation: { required: true }
+                          },
+                          vcenterusername: {
+                            label: 'label.vcenter.username',
+                            validation: { required: true }
+                          },
+                          vcenterpassword: {
+                            label: 'label.vcenter.password',
+                            validation: { required: true },
+                            isPassword: true
+                          },
+                          vcenterdcname: {
+                            label: 'label.vcenter.datacenter',
+                            validation: { required: true }
+                          }
 	                      }
 	                    },
 	                    action: function(args) {
-	                      var array1 = [];
-	                      array1.push("&zoneId=" + "1");
-	                      array1.push("&ipaddress=" + args.data.ipaddress);
-	                      //array1.push("&clusterId=" + args.context.clusters[0].id);
-	                      array1.push("&username=" + todb(args.data.nexusUsername));
-	                      array1.push("&password=" + todb(args.data.nexusPassword));
+                        var data = $.extend(args.data, {
+                          id: args.context.clusters[0].id
+                        });
 
                         $.ajax({
-	                        url: createURL("addCiscoNexusVSM" + array1.join("")),
+	                        url: createURL("addCiscoNexusVSM"),
+                          data: data,
 	                        dataType: "json",
 	                        //async: true,
 	                        success: function(json) {
