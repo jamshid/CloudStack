@@ -6173,19 +6173,19 @@
                     label: 'Add Nexus vSwitch',
                     isBoolean: true
                   },
-                  nexusVswitchIpAddress: {
+                  vsmipaddress: {
                     label: 'vSwitch IP Address',
                     dependsOn: 'enableNexusVswitch',
                     validation: { required: true },
                     isHidden: true
                   },
-                  nexusVswitchUsername: {
+                  vsmusername: {
                     label: 'vSwitch Username',
                     dependsOn: 'enableNexusVswitch',
                     validation: { required: true },
                     isHidden: true
                   },
-                  nexusVswitchPassword: {
+                  vsmpassword: {
                     label: 'vSwitch Password',
                     dependsOn: 'enableNexusVswitch',
                     validation: { required: true },
@@ -6214,6 +6214,12 @@
                 if(args.data.hypervisor == "VMware") {
                   array1.push("&username=" + todb(args.data.vCenterUsername));
                   array1.push("&password=" + todb(args.data.vCenterPassword));
+
+                  if (args.data.enableNexusVswitch) {
+                    array1.push('&vsmipaddress=' + args.data.vsmipaddress);
+                    array1.push('&vsmusername=' + args.data.vsmusername);
+                    array1.push('&vsmpassword=' + args.data.vsmpassword);
+                  }
 
                   var hostname = args.data.vCenterHost;
                   var dcName = args.data.vCenterDatacenter;
