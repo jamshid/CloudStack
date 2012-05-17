@@ -6173,19 +6173,19 @@
                     label: 'Add Nexus vSwitch',
                     isBoolean: true
                   },
-                  nexusVswitchIpAddress: {
+                  vsmipaddress: {
                     label: 'vSwitch IP Address',
                     dependsOn: 'enableNexusVswitch',
                     validation: { required: true },
                     isHidden: true
                   },
-                  nexusVswitchUsername: {
+                  vsmusername: {
                     label: 'vSwitch Username',
                     dependsOn: 'enableNexusVswitch',
                     validation: { required: true },
                     isHidden: true
                   },
-                  nexusVswitchPassword: {
+                  vsmpassword: {
                     label: 'vSwitch Password',
                     dependsOn: 'enableNexusVswitch',
                     validation: { required: true },
@@ -6214,6 +6214,12 @@
                 if(args.data.hypervisor == "VMware") {
                   array1.push("&username=" + todb(args.data.vCenterUsername));
                   array1.push("&password=" + todb(args.data.vCenterPassword));
+
+                  if (args.data.enableNexusVswitch) {
+                    array1.push('&vsmipaddress=' + args.data.vsmipaddress);
+                    array1.push('&vsmusername=' + args.data.vsmusername);
+                    array1.push('&vsmpassword=' + args.data.vsmpassword);
+                  }
 
                   var hostname = args.data.vCenterHost;
                   var dcName = args.data.vCenterDatacenter;
@@ -6261,23 +6267,23 @@
           detailView: {
             viewAll: { path: '_zone.hosts', label: 'label.hosts' },
             isMaximized:true,
-            tabFilter:function(args) {
-                              var vSwichConfigEnabled;
-                              $.ajax({
-                                url: createURL('listConfigurations'),
-                                data: { name: 'vmware.use.nexus.vswitch' },
-                                async: false,
-                                success: function(json) {
-                                  vSwichConfigEnabled = json.listconfigurationsresponse.configuration[0].value;
-                                }
-                              });
+            tabFilter: function(args) {
+              var vSwichConfigEnabled, vSwitchPresentOnCluster;
+              $.ajax({
+                url: createURL('listConfigurations'),
+                data: { name: 'vmware.use.nexus.vswitch' },
+                async: false,
+                success: function(json) {
+                  vSwichConfigEnabled = json.listconfigurationsresponse.configuration[0].value;
+                }
+              });
 
-                              var hypervisorType = args.context.clusters[0].hypervisortype;
-                              if(vSwichConfigEnabled != "true" && hypervisorType != 'VMware') {
-                                  return ['nexusVswitch'];
-                              }
-                            return [];
-              },
+              var hypervisorType = args.context.clusters[0].hypervisortype;
+              if(vSwichConfigEnabled != "true" || hypervisorType != 'VMware') {
+                return ['nexusVswitch'];
+              }
+              return [];
+            },
 
             actions: {
               enable: {
@@ -6473,64 +6479,15 @@
               nexusVswitch: {
                 title:'label.nexusVswitch',
                 listView: {
+                  id: 'vSwitches',
                   fields: {
                     vsmdeviceid: { label: 'label.name' },
                     type: { label: 'label.type' },
                     zonename: { label: 'label.zone' },
                     state: { label: 'label.status' }
                   },
-                  actions: {
-                    add: {
-	              label: 'Add Nexus Vswitch',
-	              id: 'vSwitch',
-	              createForm: {
-	              //  id: 'dialog-form',
-	                title: 'Add New Nexus VSwitch',
-	                desc: 'Please enter the below mentioned details ',
-	                fields: {
-	                  ipaddress: { label: 'IP Address' , validation: { required: true }},
-	                  nexusUsername: { label: 'Username', validation: { required: true }},
-	                  nexusPassword: { label: 'Password', isPassword: true , validation: { required: true }}
-	                }
-	              },
-	              action: function(args) {
-	                var array1 = [];
-	                array1.push("&zoneId=" + "1");
-	                array1.push("&ipaddress=" + args.data.ipaddress);
-	                //array1.push("&clusterId=" + args.context.clusters[0].id);
-	                array1.push("&username=" + todb(args.data.nexusUsername));
-	                array1.push("&password=" + todb(args.data.nexusPassword));
-
-                                      $.ajax({
-	                                url: createURL("addCiscoNexusVSM" + array1.join("")),
-	                                dataType: "json",
-	                                //async: true,
-	                                success: function(json) {
-	                                  var item = json.addciscon1kvvsmresponse.jobid;
-	                                  args.response.success({
-	                                           data:item
-	                                  });
-	                                },
-	                                error: function(XMLHttpResponse) {
-	                                  var errorMsg = parseXMLHttpResponse(XMLHttpResponse);
-	                                  args.response.error(errorMsg);
-	                                }
-	                              });
-	              },
-	              notification: {
-	                poll: function(args) {
-	                  args.complete({ data: { state: 'Enabled' }})
-	                }
-	              },
-	              messages: {
-	                notification : function() { return 'Added Nexus Vswitch'; }
-	              }
-                    }     
-		  },
-                
                   detailView: {
                     actions: {
-
                       enable: {
                         label: 'label.action.enable.nexusVswitch',
                         messages: {
@@ -6538,18 +6495,18 @@
                             return 'message.action.enable.nexusVswitch';
                           },
                           notification: function(args) {
-                          return 'label.action.enable.nexusVswitch';
-			  }
+                            return 'label.action.enable.nexusVswitch';
+			                    }
                         },
                         action: function(args) {
                           $.ajax({
-                            url: createURL("enableCiscoNexusVSM&id=" + args.context.undefined[0].vsmdeviceid),
+                            url: createURL("enableCiscoNexusVSM&id=" + args.context.vSwitches[0].vsmdeviceid),
                             dataType: "json",
                             async: true,
                             success: function(json) {
                               var item = json.getciscovsmbyclusteridcmdresponse.cisconexusvsm;
                               args.context.clusters[0].state = item.allocationstate;
-                                                                 addExtraPropertiesToClusterObject(item);
+                              addExtraPropertiesToClusterObject(item);
                               args.response.success({
                                 actionFilter: podActionfilter,
                                 data:item
@@ -6576,13 +6533,13 @@
                         },
                         action: function(args) {
                           $.ajax({
-                            url: createURL("disableCiscoNexusVSM&id=" + args.context.undefined[0].vsmdeviceid ),
+                            url: createURL("disableCiscoNexusVSM&id=" + args.context.vSwitches[0].vsmdeviceid ),
                             dataType: "json",
                             async: true,
                             success: function(json) {
                               var item = json.getciscovsmbyclusteridcmdresponse.cisconexusvsm; 
                               args.context.clusters[0].state = item.allocationstate;
-                                                                      addExtraPropertiesToClusterObject(item);
+                              addExtraPropertiesToClusterObject(item);
                               args.response.success({
                                 actionFilter: podActionfilter,
                                 data:item
@@ -6609,7 +6566,7 @@
                         },
                         action: function(args) {
                           $.ajax({
-                            url: createURL("deleteCiscoNexusVSM&id=" + args.context.undefined[0].vsmdeviceid),
+                            url: createURL("deleteCiscoNexusVSM&id=" + args.context.vSwitches[0].vsmdeviceid),
                             dataType: "json",
                             async: true,
                             success: function(json) {
@@ -6632,23 +6589,26 @@
                           zonename: { label: 'label.zone' },
                           state: { label: 'label.status' }
                         },
-                  
+                        
                         dataProvider: function(args) {
                           $.ajax({
                             url: createURL("listClusters&id=" + args.context.clusters[0].id),
                             dataType: "json",
                             success: function(json) {
                               var item = json.listclustersresponse.cluster[0];
-                                                                      addExtraPropertiesToClusterObject(item);
+                              addExtraPropertiesToClusterObject(item);
                               args.response.success({
                                 actionFilter: clusterActionfilter,
                                 data: item
                               });
+                            },
+                            error: function(json) {
+                              args.response.error(parseXMLHttpResponse(json));
                             }
                           });
                         }
                       }
-                    },
+                    }
                   },
 
                   dataProvider: function(args) {
@@ -6661,6 +6621,10 @@
                           actionFilter: clusterActionfilter,
                           data: item
                         });
+                      },
+                      error: function(json) {
+                        // Not generally a real error; means vSwitch still needs setup
+                        args.response.success({ data: [] });
                       }
                     });
                   }
@@ -7510,7 +7474,6 @@
                         var items = [];
                         items.push({id: "nfs", description: "nfs"});
                         items.push({id: "SharedMountPoint", description: "SharedMountPoint"});
-												items.push({id: "clvm", description: "CLVM"});
                         args.response.success({data: items});
                       }
                       else if(selectedClusterObj.hypervisortype == "XenServer") {
