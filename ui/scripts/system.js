@@ -6508,7 +6508,7 @@
                               args.context.clusters[0].state = item.allocationstate;
                               addExtraPropertiesToClusterObject(item);
                               args.response.success({
-                                actionFilter: podActionfilter,
+                                actionFilter: nexusActionfilter,
                                 data:item
                               });
                             }
@@ -6541,7 +6541,7 @@
                               args.context.clusters[0].state = item.allocationstate;
                               addExtraPropertiesToClusterObject(item);
                               args.response.success({
-                                actionFilter: podActionfilter,
+                                actionFilter: nexusActionfilter,
                                 data:item
                               });
                             }
@@ -8885,6 +8885,19 @@
     if(jsonObj.allocationstate == "Disabled")
       allowedActions.push("enable");
     else if(jsonObj.allocationstate == "Enabled")
+      allowedActions.push("disable");
+    allowedActions.push("remove");
+    return allowedActions;
+  }
+   
+
+   var nexusActionfilter = function(args) {
+    var nexusObj = args.context.item;
+    var allowedActions = [ ];
+    allowedActions.push("edit");
+    if(nexusObj.vsmdevicestate == "Disabled")
+      allowedActions.push("enable");
+    else if(nexusObj.vsmdevicestate == "Enabled")
       allowedActions.push("disable");
     allowedActions.push("remove");
     return allowedActions;
