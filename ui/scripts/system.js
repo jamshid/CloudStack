@@ -6602,7 +6602,7 @@
                               var item = json.getciscovsmdetailscmdresponse.cisconexusvsm;
                               addExtraPropertiesToClusterObject(item);
                               args.response.success({
-                                actionFilter: clusterActionfilter,
+                                actionFilter: nexusActionfilter,
                                 data: item
                               });
                             },
@@ -6622,7 +6622,7 @@
                       success: function(json) {
                         var item = json.getciscovsmbyclusteridcmdresponse.cisconexusvsm;
                         args.response.success({
-                          actionFilter: clusterActionfilter,
+                          actionFilter: nexusActionfilter,
                           data: item
                         });
                       },
