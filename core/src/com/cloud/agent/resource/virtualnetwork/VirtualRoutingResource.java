@@ -459,14 +459,14 @@ public class VirtualRoutingResource implements Manager {
         command.add("-n", cmd.getVmName());
         
         if (cmd.getDefaultRouter() != null) {
-            command.add(" -d " + cmd.getDefaultRouter());
+            command.add("-d", cmd.getDefaultRouter());
         }
         if (cmd.getStaticRoutes() != null) {
-        	command.add(" -s " + cmd.getStaticRoutes());
+        	command.add("-s", cmd.getStaticRoutes());
         }
         
         if (cmd.getDefaultDns() != null) {
-        	command.add(" -N " + cmd.getDefaultDns());
+        	command.add("-N", cmd.getDefaultDns());
         }
 
         final String result = command.execute();
@@ -617,17 +617,16 @@ public class VirtualRoutingResource implements Manager {
         } else {
             command.add("-D");
         }
-        String cidrSize = Long.toString(NetUtils.getCidrSize(vlanNetmask));
+
         if (sourceNat) {
             command.add("-s");
         } 
         if (firstIP) {
             command.add( "-f");
-            command.add( "-l", publicIpAddress + "/" + cidrSize);
-        } else {
-            command.add("-l", publicIpAddress);
-        }
 
+        }
+        String cidrSize = Long.toString(NetUtils.getCidrSize(vlanNetmask));
+        command.add( "-l", publicIpAddress + "/" + cidrSize);
         String publicNic = "eth" + nicNum;
         command.add("-c", publicNic);
         
