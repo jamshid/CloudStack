@@ -6584,18 +6584,22 @@
                       details: {
                         title: 'label.details',
                         fields: {
-                          name: { label: 'label.name' },
-                          type: { label: 'label.type' },
-                          zonename: { label: 'label.zone' },
-                          state: { label: 'label.status' }
+                          vsmdeviceid: { label: 'label.name' },
+                          ipaddress: { label: 'label.ipaddress' },
+                          vcenterdcname: { label: 'label.vcdcname' },
+                          vcenteripaddr: { label: 'label.vcipaddress' },
+                          vsmctrlvlanid: { label: 'label.vsmctrlvlanid' },
+                          vsmpktvlanid: { label: 'label.vsmpktvlanid' },
+                          vsmstoragevlanid: { label: 'label.vsmstoragevlanid' },
+                          vsmdevicestate: { label: 'label.state' }
                         },
                         
                         dataProvider: function(args) {
                           $.ajax({
-                            url: createURL("listClusters&id=" + args.context.clusters[0].id),
+                            url: createURL("getCiscoVSMDetails&id=" + args.context.vSwitches[0].vsmdeviceid),
                             dataType: "json",
                             success: function(json) {
-                              var item = json.listclustersresponse.cluster[0];
+                              var item = json.getciscovsmdetailscmdresponse.cisconexusvsm;
                               addExtraPropertiesToClusterObject(item);
                               args.response.success({
                                 actionFilter: clusterActionfilter,
