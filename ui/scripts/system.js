@@ -6484,7 +6484,7 @@
                     vsmdeviceid: { label: 'label.name' },
                     type: { label: 'label.type' },
                     zonename: { label: 'label.zone' },
-                    state: { label: 'label.status' }
+                    vsmdevicestate: { label: 'label.state' }
                   },
                   detailView: {
                     actions: {
