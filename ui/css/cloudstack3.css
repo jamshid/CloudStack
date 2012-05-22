@@ -557,6 +557,12 @@ body.login {
   height: 540px;
 }
 
+.install-wizard .step.intro.what-is-cloudplatform p {
+  background: url(../images/bg-what-is-cloudstack.png) no-repeat 50% 237px;
+  height: 540px;
+}
+
+
 /*** Diagram*/
 .install-wizard .diagram {
   width: 910px;
