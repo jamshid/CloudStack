@@ -1754,8 +1754,7 @@
         allowedActions.push("restore");
       }
     }
-    else if (jsonObj.state == 'Running') {
-      allowedActions.push("edit");
+    else if (jsonObj.state == 'Running') {     
       allowedActions.push("stop");
       allowedActions.push("restart");
       allowedActions.push("destroy");
