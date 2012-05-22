@@ -6596,7 +6596,7 @@
                         
                         dataProvider: function(args) {
                           $.ajax({
-                            url: createURL("getCiscoVSMDetails&id=" + args.context.vSwitches[0].vsmdeviceid),
+                            url: createURL("listCiscoVSMDetails&id=" + args.context.clusters[0].id),
                             dataType: "json",
                             success: function(json) {
                               var item = json.getciscovsmdetailscmdresponse.cisconexusvsm;
@@ -6617,7 +6617,7 @@
 
                   dataProvider: function(args) {
                     $.ajax({
-                      url: createURL("getCiscoVSMByClusterId&id=" + args.context.clusters[0].id),
+                      url: createURL("listCiscoVSMDetails&id=" + args.context.clusters[0].id),
                       dataType: "json",
                       success: function(json) {
                         var item = json.getciscovsmbyclusteridcmdresponse.cisconexusvsm;
