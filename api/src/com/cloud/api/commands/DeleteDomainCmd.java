@@ -93,7 +93,7 @@ public class DeleteDomainCmd extends BaseAsyncCmd {
             SuccessResponse response = new SuccessResponse(getCommandName());
             this.setResponseObject(response);
         } else {
-            throw new ServerApiException(BaseCmd.INTERNAL_ERROR, "Failed to delete domain");
+            throw new ServerApiException(BaseCmd.INTERNAL_ERROR, "Failed to delete domain due to presence of sub domains in the domain");
         }
     }
 }
