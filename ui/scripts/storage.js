@@ -34,13 +34,16 @@
             name: { label: 'label.name' },
             type: { label: 'label.type' },
             hypervisor: { label: 'label.hypervisor' },	
-            vmdisplayname: { label: 'label.vm.display.name' },
-            state: { 
+            vmdisplayname: { label: 'label.vm.display.name' }
+            						
+						/*
+						state: { 
 						  label: 'State',
 							indicator: {               
                 'Ready': 'on'
               }
 						}
+						*/
           },
 
           // List view actions
@@ -204,6 +207,7 @@
 									  label: 'label.format',
 										select: function(args) {
 										  var items = [];
+                      items.push({ id: 'RAW', description: 'RAW' });
 											items.push({ id: 'VHD', description: 'VHD' });
 											items.push({ id: 'OVA', description: 'OVA' });
 											items.push({ id: 'QCOW2', description: 'QCOW2' });
@@ -233,9 +237,20 @@
                   url: createURL("uploadVolume" + array1.join("")),
                   dataType: "json",
                   async: true,
-                  success: function(json) {	
-                    var items = json.uploadvolumeresponse.volume;  
-                    args.response.success({data:items[0]});
+                  success: function(json) {										  
+										var jid = json.uploadvolumeresponse.jobid;
+										args.response.success(
+											{_custom:
+											 {jobId: jid,
+												getUpdatedItem: function(json) {												 
+													return json.queryasyncjobresultresponse.jobresult.volume;													
+												},
+												getActionFilter: function() {
+													return volumeActionfilter;
+												}
+											 }
+											}
+										);																	
                   },
                   error: function(json) {
                     args.response.error(parseXMLHttpResponse(json));
@@ -244,9 +259,7 @@
               },
 
               notification: {
-                poll: function(args) {
-                  args.complete();
-                }
+                poll: pollAsyncJobResult
               }
             }
 							
@@ -934,7 +947,27 @@
                   {
                     id: { label: 'ID' },
                     zonename: { label: 'label.zone' },                    
-                    state: { label: 'label.state' },
+                    state: { 
+										  label: 'label.state',
+											pollAgainIfValueIsIn: { 
+											  'UploadNotStarted': 1
+											},
+											pollAgainFn: function(context) {  //???											 
+												var toClearInterval = false; 				
+												$.ajax({
+													url: createURL("listVolumes&id=" + context.volumes[0].id),
+													dataType: "json",
+													async: false,
+													success: function(json) {	
+														var jsonObj = json.listvolumesresponse.volume[0];   
+														if(jsonObj.state != context.volumes[0].state) {	
+															toClearInterval = true;	//to clear interval	
+														}
+													}
+												});		
+                        return toClearInterval;												
+											}											
+										},
                     type: { label: 'label.type' },
                     storagetype: { label: 'label.storage.type' },   
                     hypervisor: { label: 'label.hypervisor' },										
