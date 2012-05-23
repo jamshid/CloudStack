@@ -6113,12 +6113,16 @@
 
                       args.$select.bind("change", function(event) {
                         var $form = $(this).closest('form');
-                        var $vsmFields = $.merge(
-                          $form.find('.form-item[rel=vsmipaddress]'),
-                          $form.find('.form-item[rel=vsmusername]'),
-                          $form.find('.form-item[rel=vsmpassword]')  
-                        );
-                        
+                        var $vsmFields = $form.find('.form-item').filter(function() {
+                          var vsmFields = [
+                            'vsmipaddress',
+                            'vsmusername',
+                            'vsmpassword'
+                          ];
+
+                          return $.inArray($(this).attr('rel'), vsmFields) > -1;
+                        });
+
                         if ($(this).val() == "VMware") {
                           //$('li[input_sub_group="external"]', $dialogAddCluster).show();
                           $form.find('.form-item[rel=vCenterHost]').css('display', 'inline-block');
@@ -6190,18 +6194,18 @@
                   vsmipaddress: {
                     label: 'vSwitch IP Address',
                     validation: { required: true },
-                    isHidden: false
+                    isHidden: true
                   },
                   vsmusername: {
                     label: 'vSwitch Username',
                     validation: { required: true },
-                    isHidden: false
+                    isHidden: true
                   },
                   vsmpassword: {
                     label: 'vSwitch Password',
                     validation: { required: true },
                     isPassword: true,
-                    isHidden: false
+                    isHidden: true
                   }
                   //hypervisor==VMWare ends here
                 }
