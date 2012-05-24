@@ -6,7 +6,7 @@ Step 1: Install the tools and dependencies:
 For fedora the package names are ant ant-devel, openjdk, openjdk-devel 
 
 Tools:
-yum install ant ant-devel openjdk openjdk-devel mysql mysql-server tomcat
+yum install ant ant-devel ant-nodeps openjdk openjdk-devel mysql mysql-server tomcat
 
 Dependencies:
 yum install jakarta-commons-collections jakarta-commons-dbcp.noarch apache-commons-logging.noarch jakarta-commons-pool jakarta-commons-httpclient.noarch ws-commons-util.noarch glibc-devel gcc python MySQL-python openssh-clients
@@ -18,7 +18,7 @@ Note: Tomcat6.0.35 has some known issue with CloudStack, please avoid it
 
 SSHKEY:
 Run:
-sh-keygen -t rsa -q
+ssh-keygen -t rsa -q
 to create sshkey for your account if you don't have one
 
 Step 2: Configuration
