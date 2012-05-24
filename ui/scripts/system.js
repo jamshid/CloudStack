@@ -6519,9 +6519,14 @@
                             dataType: "json",
                             async: true,
                             success: function(json) {
-                              var item = json.getciscovsmbyclusteridcmdresponse.cisconexusvsm;
-                              args.context.clusters[0].state = item.allocationstate;
-                              addExtraPropertiesToClusterObject(item);
+                            var jid = json.enablecisconexusvsmresponse.jobid;
+                              args.response.success(
+                                {_custom:
+                                  {jobId: jid}
+                                }
+                              );
+                              //args.context.vSwitches[0].vsmdevicestate = item.allocationstate;
+                              //addExtraPropertiesToClusterObject(item);  
                               args.response.success({
                                 actionFilter: nexusActionfilter,
                                 data:item
@@ -6552,9 +6557,14 @@
                             dataType: "json",
                             async: true,
                             success: function(json) {
-                              var item = json.getciscovsmbyclusteridcmdresponse.cisconexusvsm; 
-                              args.context.clusters[0].state = item.allocationstate;
-                              addExtraPropertiesToClusterObject(item);
+                            var jid = json.disablecisconexusvsmresponse.jobid; 
+                              args.response.success(
+                                {_custom:
+                                  {jobId: jid}
+                                }
+                              );
+                              //args.context.vSwitches[0].vsmdevicestate = item.allocationstate;
+                              //addExtraPropertiesToClusterObject(item);  
                               args.response.success({
                                 actionFilter: nexusActionfilter,
                                 data:item
@@ -6601,8 +6611,6 @@
                         fields: {
                           vsmdeviceid: { label: 'label.name' },
                           ipaddress: { label: 'label.ipaddress' },
-                          vcenterdcname: { label: 'label.vcdcname' },
-                          vcenteripaddr: { label: 'label.vcipaddress' },
                           vsmctrlvlanid: { label: 'label.vsmctrlvlanid' },
                           vsmpktvlanid: { label: 'label.vsmpktvlanid' },
                           vsmstoragevlanid: { label: 'label.vsmstoragevlanid' },
@@ -6611,10 +6619,10 @@
                         
                         dataProvider: function(args) {
                           $.ajax({
-                            url: createURL("listCiscoVSMDetails&id=" + args.context.clusters[0].id),
+                            url: createURL("listCiscoNexusVSMs&clusterid=" + args.context.clusters[0].id),
                             dataType: "json",
                             success: function(json) {
-                              var item = json.getciscovsmdetailscmdresponse.cisconexusvsm;
+                              var item = json.listcisconexusvsmscmdresponse.cisconexusvsm[0];
                               addExtraPropertiesToClusterObject(item);
                               args.response.success({
                                 actionFilter: nexusActionfilter,
@@ -6632,10 +6640,10 @@
 
                   dataProvider: function(args) {
                     $.ajax({
-                      url: createURL("listCiscoVSMDetails&id=" + args.context.clusters[0].id),
+                      url: createURL("listCiscoNexusVSMs&clusterid=" + args.context.clusters[0].id),
                       dataType: "json",
                       success: function(json) {
-                        var item = json.getciscovsmbyclusteridcmdresponse.cisconexusvsm;
+                        var item = json.listcisconexusvsmscmdresponse.cisconexusvsm;
                         args.response.success({
                           actionFilter: nexusActionfilter,
                           data: item
